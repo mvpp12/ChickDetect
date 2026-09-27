@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -56,7 +57,8 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _openCamera();
+    // The browser preview cannot scan, so it does not ask for the camera.
+    if (!(kIsWeb && widget.modelFailed)) _openCamera();
   }
 
   /// Android reclaims the camera when the app goes to the background. Without
@@ -333,8 +335,10 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     }
     if (widget.modelFailed) {
       return _Blocked(
-        icon: AppIcons.model,
-        title: l.modelUnavailable,
+        icon: kIsWeb ? AppIcons.onDevice : AppIcons.model,
+        // In the browser preview the AI is never there, so say where scanning
+        // does work instead of reporting a failure.
+        title: kIsWeb ? l.phoneOnly : l.modelUnavailable,
         action: null,
         actionLabel: null,
       );

@@ -144,6 +144,10 @@ class L {
       _p('Walang magamit na kamera', 'No camera available');
   String get modelUnavailable =>
       _p('Hindi gumana ang AI', 'The AI did not start');
+  String get phoneOnly => _p(
+    'Sa phone app lang gumagana ang pag-scan',
+    'Scanning only works in the phone app',
+  );
   String get tryAgain => _p('Subukan ulit', 'Try again');
   String get captureFailed => _p(
     'Hindi nakuha ang litrato. Subukan ulit.',
