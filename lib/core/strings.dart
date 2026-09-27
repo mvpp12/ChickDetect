@@ -72,6 +72,8 @@ class L {
     'Three steps, from taking the photo to seeing the result. No internet needed.',
   );
   String get startGuide => _p('Simulan ang gabay', 'Start the guide');
+  String get doThis => _p('Gawin', 'Do');
+  String get avoidThis => _p('Iwasan', 'Avoid');
   String get step => _p('Hakbang', 'Step');
   String get stepOf => _p('sa', 'of');
 
