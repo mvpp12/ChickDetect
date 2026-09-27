@@ -1,0 +1,72 @@
+name: my_flutter_app
+description: "ChickDetect — on-device screening of chicken droppings."
+publish_to: 'none'
+
+version: 2.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+# Deliberately the same dependency set that already builds for this project,
+# minus two that are no longer used. Nothing new is introduced: a package that
+# needs its own Android plugin is the most common reason a Flutter build that
+# worked yesterday stops working today, and this app has to run on Android
+# above everything else.
+#
+# Removed from the previous version:
+#   go_router   — never used; routing is a handful of named routes
+#   flutter_svg — only drew the logo, which is now drawn in code
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  image_picker: ^1.0.4
+  camera: ^0.10.5
+  image: ^4.1.0
+  intl: ^0.20.2
+  provider: ^6.1.0
+  tflite_flutter: ^0.12.0
+  shared_preferences: ^2.5.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/models/model.tflite
+    - assets/models/labels.txt
+    - assets/onboarding/
+    - assets/tips/
+    # The logo, flattened from chickenlogo.svg. That file is two PNGs and a
+    # luminance mask, which Flutter's SVG renderers do not draw reliably, so
+    # it is shipped as images instead: the full logo and the icon on its own.
+    - assets/images/logo_full.png
+    - assets/images/logo_mark.png
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+
+    # Icon fonts, vendored from Phosphor (MIT, see PHOSPHOR_LICENSE.txt).
+    # Code points are mapped in lib/core/icons.dart.
+    - family: PhosphorRegular
+      fonts:
+        - asset: assets/fonts/Phosphor-Regular.ttf
+    - family: PhosphorFill
+      fonts:
+        - asset: assets/fonts/Phosphor-Fill.ttf
+    - family: PhosphorBold
+      fonts:
+        - asset: assets/fonts/Phosphor-Bold.ttf
