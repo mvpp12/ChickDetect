@@ -101,11 +101,17 @@ class ScanStore extends ChangeNotifier {
   /// Share of scans in [list] that came back healthy, or null when the sample
   /// is too small to mean anything. Four is arbitrary but honest: a trend
   /// drawn from two scans is noise with a percentage sign on it.
+  ///
+  /// Only real readings count. A "retake" says the photo was unclear, not that
+  /// a bird was unwell; counting it as not-healthy used to make a few blurry
+  /// photos look like the flock was getting worse.
   static double? healthyShare(List<ScanRecord> list) {
-    if (list.length < 4) return null;
     final int healthy =
         list.where((ScanRecord r) => r.status == 'healthy').length;
-    return healthy / list.length;
+    final int sick =
+        list.where((ScanRecord r) => r.status == 'disease').length;
+    if (healthy + sick < 4) return null;
+    return healthy / (healthy + sick);
   }
 
   /// Sequential number shown to the farmer, oldest scan being #001.

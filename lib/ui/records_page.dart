@@ -17,10 +17,14 @@ enum _Window { week, month, all }
 
 /// The scan log.
 ///
-/// Built around the question a farmer actually brings here — "is the flock
-/// getting better or worse, and which bird was that" — rather than "how many
-/// scans have I done". The totals appear once, inside the health strip, not
-/// again as stat tiles, a count pill and a footer as they did before.
+/// Opens on the one question a farmer brings here — "do I need to do
+/// something?" — answered in a sentence, with the latest sick result one tap
+/// away. The counts sit under it, and tapping a count filters the list, so the
+/// card is also the filter: the separate row of filter chips repeated the same
+/// numbers and is gone.
+///
+/// The period switch governs the whole page, list included, so "2 sick" in the
+/// card and the list underneath always agree.
 ///
 /// Scans are grouped under the day they were taken, because "which bird was
 /// that" is almost always answered by "the one on Tuesday". Exporting and
@@ -50,8 +54,23 @@ class _RecordsPageState extends State<RecordsPage> {
   Duration get _windowSpan => switch (_window) {
     _Window.week => const Duration(days: 7),
     _Window.month => const Duration(days: 30),
-    _Window.all => const Duration(days: 3650),
+    _Window.all => const Duration(days: 36500),
   };
+
+  int? get _windowDays => switch (_window) {
+    _Window.week => 7,
+    _Window.month => 30,
+    _Window.all => null,
+  };
+
+  /// Tapping the active count again clears it, so the same control both sets
+  /// and undoes the filter.
+  void _toggleFilter(String status) =>
+      setState(() => _filter = _filter == status ? 'all' : status);
+
+  void _open(ScanRecord r) => Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => DetailPage(recordId: r.id)),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +83,8 @@ class _RecordsPageState extends State<RecordsPage> {
     }
 
     final List<ScanRecord> inWindow = store.within(_windowSpan);
-    final Map<String, int> counts = <String, int>{
-      'all': all.length,
-      'healthy': all.where((ScanRecord r) => r.status == 'healthy').length,
-      'inconclusive':
-          all.where((ScanRecord r) => r.status == 'inconclusive').length,
-      'disease': all.where((ScanRecord r) => r.status == 'disease').length,
-    };
 
-    final List<ScanRecord> shown = all.where((ScanRecord r) {
+    final List<ScanRecord> shown = inWindow.where((ScanRecord r) {
       if (_filter != 'all' && r.status != _filter) return false;
       if (_query.isEmpty) return true;
       final String q = _query.toLowerCase();
@@ -84,6 +96,13 @@ class _RecordsPageState extends State<RecordsPage> {
           conditionFor(r.conditionKey).name(l.lang).toLowerCase().contains(q);
     }).toList(growable: false);
 
+    final String? filterLabel = switch (_filter) {
+      'healthy' => l.healthy,
+      'disease' => l.diseased,
+      'inconclusive' => l.inconclusive,
+      _ => null,
+    };
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         Insets.screen,
@@ -93,11 +112,18 @@ class _RecordsPageState extends State<RecordsPage> {
       ),
       children: <Widget>[
         PageTitle(title: l.records, subtitle: l.recordsSub),
-        _HealthStrip(
+        _HealthCard(
           window: _window,
+          days: _windowDays,
           onWindow: (_Window w) => setState(() => _window = w),
           inWindow: inWindow,
           previous: _previousWindow(store),
+          lastScan: all.first.at,
+          filter: _filter,
+          onFilter: _toggleFilter,
+          onOpen: _open,
+          onScan: widget.onScan,
+          dayLabel: (DateTime d) => _dayLabel(l, d),
         ),
         const SizedBox(height: Insets.md),
         TextField(
@@ -119,44 +145,26 @@ class _RecordsPageState extends State<RecordsPage> {
                   ),
           ),
         ),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: <Widget>[
-              _FilterChip(
-                label: l.all,
-                count: counts['all']!,
-                on: _filter == 'all',
-                onTap: () => setState(() => _filter = 'all'),
+        // A visible, one-tap way back out of a filter set from the card.
+        if (filterLabel != null) ...<Widget>[
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InputChip(
+              avatar: Icon(
+                statusIcon(_filter),
+                size: 16,
+                color: statusInk(_filter),
               ),
-              _FilterChip(
-                label: l.healthy,
-                count: counts['healthy']!,
-                icon: statusIcon('healthy'),
-                ink: AppColor.green700,
-                on: _filter == 'healthy',
-                onTap: () => setState(() => _filter = 'healthy'),
-              ),
-              _FilterChip(
-                label: l.inconclusive,
-                count: counts['inconclusive']!,
-                icon: statusIcon('inconclusive'),
-                ink: AppColor.caution,
-                on: _filter == 'inconclusive',
-                onTap: () => setState(() => _filter = 'inconclusive'),
-              ),
-              _FilterChip(
-                label: l.diseased,
-                count: counts['disease']!,
-                icon: statusIcon('disease'),
-                ink: AppColor.danger,
-                on: _filter == 'disease',
-                onTap: () => setState(() => _filter = 'disease'),
-              ),
-            ],
+              label: Text('${l.showing}: $filterLabel'),
+              labelStyle: AppFont.label.copyWith(color: AppColor.ink),
+              deleteIcon: const Icon(AppIcons.close, size: 16),
+              deleteButtonTooltipMessage: l.showAll,
+              onDeleted: () => setState(() => _filter = 'all'),
+              onPressed: () => setState(() => _filter = 'all'),
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: Insets.lg),
         if (shown.isEmpty)
           AppCard(
@@ -177,19 +185,14 @@ class _RecordsPageState extends State<RecordsPage> {
             ),
           )
         else
-          ..._grouped(context, l, store, shown),
+          ..._grouped(l, store, shown),
       ],
     );
   }
 
   /// The rows, with a day heading wherever the day changes. The store keeps
   /// records newest first, so one pass is enough.
-  List<Widget> _grouped(
-    BuildContext context,
-    L l,
-    ScanStore store,
-    List<ScanRecord> shown,
-  ) {
+  List<Widget> _grouped(L l, ScanStore store, List<ScanRecord> shown) {
     final List<Widget> out = <Widget>[];
     DateTime? day;
     for (final ScanRecord r in shown) {
@@ -199,15 +202,7 @@ class _RecordsPageState extends State<RecordsPage> {
         out.add(_DayHeading(label: _dayLabel(l, d), first: out.isEmpty));
       }
       out.add(
-        _Row(
-          record: r,
-          number: store.numberOf(r),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DetailPage(recordId: r.id),
-            ),
-          ),
-        ),
+        _Row(record: r, number: store.numberOf(r), onTap: () => _open(r)),
       );
     }
     return out;
@@ -215,10 +210,11 @@ class _RecordsPageState extends State<RecordsPage> {
 
   String _dayLabel(L l, DateTime d) {
     final DateTime today = DateUtils.dateOnly(DateTime.now());
-    if (d == today) return l.today;
-    if (d == today.subtract(const Duration(days: 1))) return l.yesterday;
-    return DateFormat(d.year == today.year ? 'EEE, d MMM' : 'd MMM y')
-        .format(d);
+    final DateTime day = DateUtils.dateOnly(d);
+    if (day == today) return l.today;
+    if (day == today.subtract(const Duration(days: 1))) return l.yesterday;
+    return DateFormat(day.year == today.year ? 'EEE, d MMM' : 'd MMM y')
+        .format(day);
   }
 
   /// The equivalent window immediately before this one, for the trend line.
@@ -233,75 +229,106 @@ class _RecordsPageState extends State<RecordsPage> {
   }
 }
 
-/// Proportions, plus whether they are moving in the right direction.
-class _HealthStrip extends StatelessWidget {
+/// The answer to "do I need to do something?", then the evidence.
+///
+///   1. One sentence, coloured by what it says.
+///   2. The latest sick result, one tap from its "what to do" steps.
+///   3. Healthy vs sick — counts, not percentages; with a handful of scans a
+///      percentage claims more precision than there is. Each count is also
+///      the filter for the list below.
+///   4. Retakes on their own line. They are about the photo, not the bird, so
+///      they are kept out of the health bar.
+///   5. The trend, only once there is enough to compare.
+class _HealthCard extends StatelessWidget {
   final _Window window;
+  final int? days;
   final ValueChanged<_Window> onWindow;
   final List<ScanRecord> inWindow;
   final List<ScanRecord> previous;
+  final DateTime lastScan;
+  final String filter;
+  final ValueChanged<String> onFilter;
+  final ValueChanged<ScanRecord> onOpen;
+  final VoidCallback onScan;
+  final String Function(DateTime) dayLabel;
 
-  const _HealthStrip({
+  const _HealthCard({
     required this.window,
+    required this.days,
     required this.onWindow,
     required this.inWindow,
     required this.previous,
+    required this.lastScan,
+    required this.filter,
+    required this.onFilter,
+    required this.onOpen,
+    required this.onScan,
+    required this.dayLabel,
   });
+
+  /// A week without a scan is long enough for a problem to take hold.
+  static const int _staleDays = 7;
 
   @override
   Widget build(BuildContext context) {
     final L l = L.of(context);
     final int healthy =
         inWindow.where((ScanRecord r) => r.status == 'healthy').length;
-    final int unsure =
+    final int retakes =
         inWindow.where((ScanRecord r) => r.status == 'inconclusive').length;
-    final int sick =
-        inWindow.where((ScanRecord r) => r.status == 'disease').length;
-    final int total = inWindow.length;
+    final List<ScanRecord> sickList = inWindow
+        .where((ScanRecord r) => r.status == 'disease')
+        .toList(growable: false);
+    final int sick = sickList.length;
+    final int sinceLast =
+        DateTime.now().difference(lastScan).inDays;
 
+    // ── 1. the headline ──────────────────────────────────────────────────
+    final (String headline, IconData icon, Color ink, Color fill) =
+        sick > 0
+        ? (
+            l.sickFound(sick, days),
+            AppIcons.serious,
+            AppColor.danger,
+            AppColor.dangerSoft,
+          )
+        : healthy > 0
+        ? (
+            l.noSickFound(days),
+            AppIcons.healthy,
+            AppColor.green700,
+            AppColor.mintSoft,
+          )
+        : retakes > 0
+        ? (
+            l.noClearResults,
+            AppIcons.unsure,
+            AppColor.caution,
+            AppColor.cautionSoft,
+          )
+        : (
+            l.noScansIn(days),
+            AppIcons.scan,
+            AppColor.ink2,
+            AppColor.fill,
+          );
+
+    // ── 5. the trend, only when it has something to say ───────────────────
     final double? now = ScanStore.healthyShare(inWindow);
     final double? before = ScanStore.healthyShare(previous);
-
-    String trend;
-    IconData trendIcon;
-    Color trendInk;
-    Color trendFill;
-    if (now == null || before == null) {
-      trend = l.notEnoughData;
-      trendIcon = AppIcons.noTrend;
-      trendInk = AppColor.ink3;
-      trendFill = AppColor.fill;
-    } else if (now - before > 0.08) {
-      trend = l.trendBetter;
-      trendIcon = AppIcons.trendUp;
-      trendInk = AppColor.green700;
-      trendFill = AppColor.mintSoft;
-    } else if (before - now > 0.08) {
-      trend = l.trendWorse;
-      trendIcon = AppIcons.trendDown;
-      trendInk = AppColor.danger;
-      trendFill = AppColor.dangerSoft;
-    } else {
-      trend = l.trendSame;
-      trendIcon = AppIcons.trendFlat;
-      trendInk = AppColor.ink3;
-      trendFill = AppColor.fill;
+    (String, IconData, Color)? trend;
+    if (now != null && before != null) {
+      trend = now - before > 0.08
+          ? (l.trendBetter, AppIcons.trendUp, AppColor.green700)
+          : before - now > 0.08
+          ? (l.trendWorse, AppIcons.trendDown, AppColor.danger)
+          : (l.trendSame, AppIcons.trendFlat, AppColor.ink3);
     }
 
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(child: Text(l.flockHealth, style: AppFont.h3)),
-              Text(
-                l.countScans(total),
-                style: AppFont.labelSm.copyWith(color: AppColor.ink3),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Segmented<_Window>(
             value: window,
             onChanged: onWindow,
@@ -312,18 +339,52 @@ class _HealthStrip extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Insets.md),
-          if (total == 0)
-            Text(
-              l.notEnoughData,
-              style: AppFont.bodySm.copyWith(color: AppColor.ink3),
-            )
-          else ...<Widget>[
+
+          // 1. headline
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            decoration: BoxDecoration(
+              color: fill,
+              borderRadius: BorderRadius.circular(Insets.rMd),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 1),
+                  child: Icon(icon, size: 22, color: ink),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    headline,
+                    style: AppFont.h3.copyWith(color: ink, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 2. the latest sick result, straight to its steps
+          if (sickList.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8),
+            _LatestSick(
+              record: sickList.first,
+              when: dayLabel(sickList.first.at),
+              onTap: () => onOpen(sickList.first),
+            ),
+          ],
+
+          // 3. healthy vs sick, as counts that double as the filter
+          if (healthy + sick > 0) ...<Widget>[
+            const SizedBox(height: Insets.md),
             ClipRRect(
               borderRadius: BorderRadius.circular(Insets.rFull),
               child: SizedBox(
-                height: 10,
+                height: 8,
                 // Stretch, or the childless ColoredBoxes collapse to zero
-                // height and the bar never shows — which it didn't, before.
+                // height and the bar never shows.
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
@@ -332,14 +393,7 @@ class _HealthStrip extends StatelessWidget {
                         flex: healthy,
                         child: const ColoredBox(color: AppColor.green700),
                       ),
-                    if (healthy > 0 && (unsure > 0 || sick > 0))
-                      const SizedBox(width: 2),
-                    if (unsure > 0)
-                      Expanded(
-                        flex: unsure,
-                        child: const ColoredBox(color: AppColor.caution),
-                      ),
-                    if (unsure > 0 && sick > 0) const SizedBox(width: 2),
+                    if (healthy > 0 && sick > 0) const SizedBox(width: 2),
                     if (sick > 0)
                       Expanded(
                         flex: sick,
@@ -349,48 +403,70 @@ class _HealthStrip extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             Row(
               children: <Widget>[
-                _Legend(
-                  ink: AppColor.green700,
-                  label: l.healthy,
-                  value: healthy,
-                  total: total,
+                Expanded(
+                  child: _Count(
+                    status: 'healthy',
+                    value: healthy,
+                    label: l.healthy,
+                    on: filter == 'healthy',
+                    onTap: () => onFilter('healthy'),
+                  ),
                 ),
-                _Legend(
-                  ink: AppColor.caution,
-                  label: l.inconclusive,
-                  value: unsure,
-                  total: total,
-                ),
-                _Legend(
-                  ink: AppColor.danger,
-                  label: l.diseased,
-                  value: sick,
-                  total: total,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _Count(
+                    status: 'disease',
+                    value: sick,
+                    label: l.diseased,
+                    on: filter == 'disease',
+                    onTap: () => onFilter('disease'),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: trendFill,
-                borderRadius: BorderRadius.circular(Insets.rSm),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Icon(trendIcon, size: 16, color: trendInk),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      trend,
-                      style: AppFont.labelSm.copyWith(color: trendInk),
-                    ),
+          ],
+
+          // 4. retakes, kept apart from health
+          if (retakes > 0 && healthy + sick > 0) ...<Widget>[
+            const SizedBox(height: 8),
+            _LinkRow(
+              icon: AppIcons.unsure,
+              ink: AppColor.caution,
+              text: l.needRetake(retakes),
+              on: filter == 'inconclusive',
+              onTap: () => onFilter('inconclusive'),
+            ),
+          ],
+
+          // 5. trend
+          if (trend != null) ...<Widget>[
+            const SizedBox(height: 8),
+            Row(
+              children: <Widget>[
+                const SizedBox(width: 4),
+                Icon(trend.$2, size: 16, color: trend.$3),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    trend.$1,
+                    style: AppFont.label.copyWith(color: trend.$3),
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+          ],
+
+          // A nudge when the farm has gone quiet, whatever the period shows.
+          if (sinceLast >= _staleDays) ...<Widget>[
+            const SizedBox(height: 8),
+            _LinkRow(
+              icon: AppIcons.thisWeek,
+              ink: AppColor.ink2,
+              text: '${l.lastScanAgo(sinceLast)} · ${l.scanNow}',
+              onTap: onScan,
             ),
           ],
         ],
@@ -399,120 +475,183 @@ class _HealthStrip extends StatelessWidget {
   }
 }
 
-class _Legend extends StatelessWidget {
-  final Color ink;
-  final String label;
-  final int value;
-  final int total;
-
-  const _Legend({
-    required this.ink,
-    required this.label,
-    required this.value,
-    required this.total,
-  });
-
-  @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(color: ink, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
-            Text('$value', style: AppFont.h3),
-            const SizedBox(width: 5),
-            Text(
-              '${total == 0 ? 0 : (value * 100 / total).round()}%',
-              style: AppFont.micro.copyWith(color: AppColor.ink3),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppFont.labelSm.copyWith(color: AppColor.ink2),
-        ),
-      ],
-    ),
-  );
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final int count;
-  final bool on;
-  final IconData? icon;
-  final Color? ink;
+/// The most recent sick result, as a row that opens its report.
+class _LatestSick extends StatelessWidget {
+  final ScanRecord record;
+  final String when;
   final VoidCallback onTap;
 
-  const _FilterChip({
-    required this.label,
-    required this.count,
-    required this.on,
+  const _LatestSick({
+    required this.record,
+    required this.when,
     required this.onTap,
-    this.icon,
-    this.ink,
   });
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(right: 8),
-    child: Material(
-      color: on ? AppColor.green900 : AppColor.surface,
-      borderRadius: BorderRadius.circular(Insets.rFull),
+  Widget build(BuildContext context) {
+    final L l = L.of(context);
+    final String where = record.coop.trim();
+    return Material(
+      color: AppColor.surface,
+      borderRadius: BorderRadius.circular(Insets.rMd),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Insets.rFull),
+        borderRadius: BorderRadius.circular(Insets.rMd),
         onTap: onTap,
-        child: Semantics(
-          selected: on,
-          button: true,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: Insets.tap + 8),
+          padding: const EdgeInsets.fromLTRB(12, 8, 6, 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Insets.rMd),
+            border: Border.all(color: AppColor.line),
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      l.latest.toUpperCase(),
+                      style: AppFont.micro.copyWith(color: AppColor.ink3),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      conditionFor(record.conditionKey).name(l.lang),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppFont.label.copyWith(
+                        color: AppColor.danger,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      where.isEmpty ? when : '$where  ·  $when',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppFont.bodySm.copyWith(color: AppColor.ink2),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(AppIcons.chevron, size: 18, color: AppColor.ink3),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One count in the card. Tapping it filters the list to those scans.
+class _Count extends StatelessWidget {
+  final String status;
+  final int value;
+  final String label;
+  final bool on;
+  final VoidCallback onTap;
+
+  const _Count({
+    required this.status,
+    required this.value,
+    required this.label,
+    required this.on,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color ink = statusInk(status);
+    return Semantics(
+      button: true,
+      selected: on,
+      label: '$value $label',
+      excludeSemantics: true,
+      child: Material(
+        color: on ? AppColor.fill : Colors.transparent,
+        borderRadius: BorderRadius.circular(Insets.rSm),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Insets.rSm),
+          onTap: value == 0 ? null : onTap,
           child: Container(
-            constraints: const BoxConstraints(minHeight: Insets.tap - 4),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            constraints: const BoxConstraints(minHeight: Insets.tap),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(Insets.rFull),
+              borderRadius: BorderRadius.circular(Insets.rSm),
               border: Border.all(
-                color: on ? AppColor.green900 : AppColor.line,
+                color: on ? AppColor.ink3 : Colors.transparent,
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                if (icon != null) ...<Widget>[
-                  Icon(
-                    icon,
-                    size: 15,
-                    color: on ? AppColor.onDark : ink,
-                  ),
-                  const SizedBox(width: 6),
-                ],
-                Text(
-                  label,
-                  style: AppFont.label.copyWith(
-                    color: on ? AppColor.onDark : AppColor.ink,
-                  ),
-                ),
+                Icon(statusIcon(status), size: 16, color: ink),
                 const SizedBox(width: 7),
                 Text(
-                  '$count',
-                  style: AppFont.labelSm.copyWith(
-                    color: on ? AppColor.mint : AppColor.ink3,
+                  '$value',
+                  style: AppFont.h2.copyWith(
                     fontFeatures: const <FontFeature>[
                       FontFeature.tabularFigures(),
                     ],
                   ),
                 ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppFont.label.copyWith(color: AppColor.ink2),
+                  ),
+                ),
+                if (value > 0)
+                  const Icon(AppIcons.chevron,
+                      size: 14, color: AppColor.ink3),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A small tappable line inside the card: the retake count, the scan nudge.
+class _LinkRow extends StatelessWidget {
+  final IconData icon;
+  final Color ink;
+  final String text;
+  final VoidCallback onTap;
+  final bool on;
+
+  const _LinkRow({
+    required this.icon,
+    required this.ink,
+    required this.text,
+    required this.onTap,
+    this.on = false,
+  });
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: on ? AppColor.fill : Colors.transparent,
+    borderRadius: BorderRadius.circular(Insets.rSm),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(Insets.rSm),
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: <Widget>[
+            Icon(icon, size: 16, color: ink),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                text,
+                style: AppFont.label.copyWith(color: AppColor.ink2),
+              ),
+            ),
+            const Icon(AppIcons.chevron, size: 14, color: AppColor.ink3),
+          ],
         ),
       ),
     ),

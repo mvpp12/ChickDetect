@@ -275,6 +275,41 @@ class L {
   String get recordsDeleted => _p('Nabura lahat ng scan', 'All scans deleted');
   String get today => _p('Ngayon', 'Today');
   String get yesterday => _p('Kahapon', 'Yesterday');
+  // ── health summary card ────────────────────────────────────────────────
+  /// "in the last 7 days" etc. [days] is null for the all-time view.
+  String period(int? days) => days == null
+      ? _p('sa lahat ng scan', 'across all your scans')
+      : _p('sa huling $days araw', 'in the last $days days');
+  String sickFound(int n, int? days) => _p(
+    '$n may sakit ${period(days)}',
+    '$n sick ${n == 1 ? 'result' : 'results'} ${period(days)}',
+  );
+  String noSickFound(int? days) => _p(
+    'Walang nakitang sakit ${period(days)}',
+    'No sickness found ${period(days)}',
+  );
+  String noScansIn(int? days) => _p(
+    'Walang scan ${period(days)}',
+    'No scans ${period(days)}',
+  );
+  String get noClearResults => _p(
+    'Wala pang malinaw na resulta — kunan ulit',
+    'No clear results yet — take the photos again',
+  );
+  String needRetake(int n) => _p(
+    '$n litrato ang kailangang kunan ulit',
+    '$n ${n == 1 ? 'photo needs' : 'photos need'} retaking',
+  );
+  String lastScanAgo(int days) => _p(
+    'Huling scan: $days araw na ang nakaraan',
+    'Last scan was $days days ago',
+  );
+  String get scanNow => _p('Mag-scan na', 'Scan now');
+  String get latest => _p('Pinakabago', 'Latest');
+  String get tapToFilter =>
+      _p('Pindutin para makita', 'Tap to see them');
+  String get showing => _p('Ipinapakita', 'Showing');
+  String get showAll => _p('Ipakita lahat', 'Show all');
   String get trendBetter => _p('Gumaganda kumpara noon', 'Better than before');
   String get trendWorse => _p('Lumalala kumpara noon', 'Worse than before');
   String get trendSame => _p('Halos pareho lang', 'About the same');
