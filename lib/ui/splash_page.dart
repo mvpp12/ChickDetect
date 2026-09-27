@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/strings.dart';
@@ -25,12 +27,36 @@ class _SplashPageState extends State<SplashPage>
     super.initState();
     _c = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..forward();
+      // Matches ChickDetectApp.minSplash, so the bar is full as the page
+      // leaves rather than stopping short or finishing early.
+      duration: const Duration(milliseconds: 2500),
+    );
+  }
+
+  bool _started = false;
+  Timer? _fallback;
+
+  /// The logo animates in only once its image is ready. Otherwise, wherever
+  /// loading the image is slow (the browser preview), the fade-in plays while
+  /// there is nothing to show and the logo just pops in late. A short timeout
+  /// starts it regardless, so a missing image can never hold the page still.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    precacheImage(const AssetImage(BrandMark.fullAsset), context)
+        .whenComplete(_go);
+    _fallback = Timer(const Duration(milliseconds: 700), _go);
+  }
+
+  void _go() {
+    if (mounted && !_c.isAnimating && _c.value == 0) _c.forward();
   }
 
   @override
   void dispose() {
+    _fallback?.cancel();
     _c.dispose();
     super.dispose();
   }

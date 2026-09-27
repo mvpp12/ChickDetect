@@ -52,7 +52,16 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
     _boot();
   }
 
+  /// The landing page stays at least this long, even when loading is instant
+  /// — in a browser it is, and the logo used to flash past unseen. Loading
+  /// that takes longer (the AI on an older phone) simply keeps it up longer.
+  /// Kept in step with the loading bar in [SplashPage], which fills over the
+  /// same time.
+  static const Duration minSplash = Duration(milliseconds: 2500);
+
   Future<void> _boot() async {
+    final Stopwatch shown = Stopwatch()..start();
+
     // Language and records first: they decide what the first frame says.
     await _language.load();
     await _store.load();
@@ -73,6 +82,9 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
     } catch (_) {
       _modelFailed = true;
     }
+
+    final Duration left = minSplash - shown.elapsed;
+    if (left > Duration.zero) await Future<void>.delayed(left);
 
     if (!mounted) return;
     setState(() => _guideSeen = seen);
@@ -110,13 +122,20 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
           title: 'ChickDetect',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
-          home: Builder(
-            builder: (BuildContext context) {
-              if (_guideSeen == null) return const SplashPage();
-              if (_guideSeen == false) {
-                return GuideIntroPage(onDone: _markGuideSeen);
-              }
-              return AppShell(modelFailed: _modelFailed);
+          // A short fade from the landing page into the app, instead of a cut.
+          home: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 450),
+            switchInCurve: Curves.easeOut,
+            child: switch (_guideSeen) {
+              null => const SplashPage(key: ValueKey<String>('splash')),
+              false => GuideIntroPage(
+                key: const ValueKey<String>('guide'),
+                onDone: _markGuideSeen,
+              ),
+              true => AppShell(
+                key: const ValueKey<String>('shell'),
+                modelFailed: _modelFailed,
+              ),
             },
           ),
         ),
