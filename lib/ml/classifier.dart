@@ -76,32 +76,29 @@ class Classifier {
   ///
   /// Throws [StateError] if called before [load] finishes — the UI never
   /// enables the shutter until then.
-  Prediction run(Uint8List bytes) {
+  Prediction run(Uint8List bytes) => _runResized(_prepare(bytes));
+
+  /// Decodes and resizes to the graph's input — the one preparation both
+  /// [run] and [explain] use, so the explanation is of the same input.
+  img.Image _prepare(Uint8List bytes) {
+    final img.Image? decoded = img.decodeImage(bytes);
+    if (decoded == null) {
+      throw const FormatException('Could not decode the captured image');
+    }
+    return img.copyResize(decoded, width: inputSize, height: inputSize);
+  }
+
+  Prediction _runResized(img.Image resized) {
     final ModelRunner? interpreter = _interpreter;
     if (!_ready || interpreter == null) {
       throw StateError('Classifier used before load() completed');
     }
 
-    final img.Image? decoded = img.decodeImage(bytes);
-    if (decoded == null) {
-      throw const FormatException('Could not decode the captured image');
-    }
-
-    final img.Image resized = img.copyResize(
-      decoded,
-      width: inputSize,
-      height: inputSize,
-    );
-
     final List<List<List<List<double>>>> input = <List<List<List<double>>>>[
       List<List<List<double>>>.generate(inputSize, (int y) {
         return List<List<double>>.generate(inputSize, (int x) {
           final img.Pixel p = resized.getPixel(x, y);
-          return <double>[
-            _normalise(p.r),
-            _normalise(p.g),
-            _normalise(p.b),
-          ];
+          return <double>[_normalise(p.r), _normalise(p.g), _normalise(p.b)];
         });
       }),
     ];
@@ -125,6 +122,55 @@ class Classifier {
       confidence: row[best],
       scores: scores,
     );
+  }
+
+  /// Which parts of the photo the answer depended on — occlusion sensitivity.
+  ///
+  /// The photo is split into a [grid]×[grid] grid. Each square in turn is
+  /// covered with plain grey and the model is run again; the more the score
+  /// for [label] falls, the more that square mattered. This is a genuine
+  /// measurement of this model on this photo, not an illustration — which is
+  /// why the app uses it instead of inventing per-feature percentages the
+  /// model does not produce.
+  ///
+  /// Returns grid² values in 0–1, row by row (1 = mattered most), or null if
+  /// the model is not loaded. Runs grid² + 1 inferences, yielding between them
+  /// so the screen keeps drawing its progress.
+  Future<List<double>?> explain(
+    Uint8List bytes,
+    String label, {
+    int grid = 4,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (!_ready) return null;
+    final img.Image base = _prepare(bytes);
+    final double before = _runResized(base).scores[label] ?? 0;
+    final int cell = (inputSize / grid).ceil();
+    final img.Color grey = img.ColorRgb8(128, 128, 128);
+    final List<double> drops = <double>[];
+
+    for (int gy = 0; gy < grid; gy++) {
+      for (int gx = 0; gx < grid; gx++) {
+        final img.Image covered = base.clone();
+        img.fillRect(
+          covered,
+          x1: gx * cell,
+          y1: gy * cell,
+          x2: ((gx + 1) * cell - 1).clamp(0, inputSize - 1),
+          y2: ((gy + 1) * cell - 1).clamp(0, inputSize - 1),
+          color: grey,
+        );
+        final double after = _runResized(covered).scores[label] ?? 0;
+        drops.add((before - after).clamp(0.0, 1.0));
+        onProgress?.call(drops.length / (grid * grid));
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+
+    final double top = drops.reduce((double a, double b) => a > b ? a : b);
+    // Nothing moved the score: no square mattered more than another.
+    if (top < 0.01) return List<double>.filled(drops.length, 0);
+    return drops.map((double d) => d / top).toList(growable: false);
   }
 
   void dispose() {

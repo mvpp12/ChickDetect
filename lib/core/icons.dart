@@ -94,6 +94,18 @@ class AppIcons {
   static const IconData exportCsv = IconData(0xe476, fontFamily: _regular);
   static const IconData replay = IconData(0xe3d2, fontFamily: _regular);
 
+  // ── scan details ───────────────────────────────────────────────────────
+  static const IconData tabOverview = IconData(0xe198, fontFamily: _regular);
+  static const IconData tabSymptoms = IconData(0xeadc, fontFamily: _regular);
+  static const IconData tabCare = IconData(0xe2ac, fontFamily: _regular);
+  static const IconData tabVet = IconData(0xe7ea, fontFamily: _regular);
+  static const IconData supplements = IconData(0xe700, fontFamily: _regular);
+  static const IconData foodWater = IconData(0xe210, fontFamily: _regular);
+  static const IconData careKit = IconData(0xe570, fontFamily: _regular);
+  static const IconData warningSign = IconData(0xe7fc, fontFamily: _fill);
+  static const IconData phone = IconData(0xe3b8, fontFamily: _fill);
+  static const IconData fullScreen = IconData(0xe1d0, fontFamily: _regular);
+
   // ── generic ────────────────────────────────────────────────────────────
   static const IconData delete = IconData(0xe4a6, fontFamily: _regular);
   static const IconData edit = IconData(0xe3b4, fontFamily: _regular);

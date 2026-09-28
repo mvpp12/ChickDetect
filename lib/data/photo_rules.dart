@@ -43,11 +43,7 @@ const List<FlowStep> kFlowSteps = <FlowStep>[
     title: _f2t,
     body: _f2b,
   ),
-  FlowStep(
-    asset: 'assets/onboarding/step_result.png',
-    title: _f3t,
-    body: _f3b,
-  ),
+  FlowStep(asset: 'assets/onboarding/step_result.png', title: _f3t, body: _f3b),
 ];
 
 /// One capture rule, for the Guide tab.

@@ -51,31 +51,40 @@ class ConditionReport extends StatelessWidget {
     final List<Widget> out = <Widget>[];
 
     // ── verdict ──────────────────────────────────────────────────────────
-    out.add(_Verdict(condition: condition, confidence: confidence,
-        rawLabel: rawLabel));
+    out.add(
+      VerdictCard(
+        condition: condition,
+        confidence: confidence,
+        rawLabel: rawLabel,
+      ),
+    );
 
     // ── why it was held back ─────────────────────────────────────────────
     if (heldBack.isNotEmpty) {
       out
         ..add(const SizedBox(height: Insets.md))
-        ..add(_HeldBack(reasons: heldBack));
+        ..add(HeldBackCallout(reasons: heldBack));
     }
 
     // ── facts ────────────────────────────────────────────────────────────
     final List<Widget> facts = <Widget>[];
     if (condition.spread != null) {
-      facts.add(_Fact(
-        icon: AppIcons.spread,
-        label: l.spread,
-        value: condition.spread!(lang),
-      ));
+      facts.add(
+        FactTile(
+          icon: AppIcons.spread,
+          label: l.spread,
+          value: condition.spread!(lang),
+        ),
+      );
     }
     if (condition.zoonotic != null) {
-      facts.add(_Fact(
-        icon: AppIcons.people,
-        label: l.riskToPeople,
-        value: condition.zoonotic!(lang),
-      ));
+      facts.add(
+        FactTile(
+          icon: AppIcons.people,
+          label: l.riskToPeople,
+          value: condition.zoonotic!(lang),
+        ),
+      );
     }
     if (facts.isNotEmpty) {
       out
@@ -127,7 +136,6 @@ class ConditionReport extends StatelessWidget {
             SectionHead(
               icon: hasDay ? AppIcons.firstDay : AppIcons.thisWeek,
               label: hasDay ? l.first24 : l.thisWeek,
-
             ),
           )
           ..add(
@@ -152,8 +160,7 @@ class ConditionReport extends StatelessWidget {
     if (condition.signs.isNotEmpty) {
       out
         ..add(const SizedBox(height: Insets.section))
-        ..add(SectionHead(
-            icon: AppIcons.lookFor, label: l.whatToLookFor))
+        ..add(SectionHead(icon: AppIcons.lookFor, label: l.whatToLookFor))
         ..add(SignTabs(groups: condition.signs, accent: AppColor.ink3));
     }
 
@@ -167,10 +174,7 @@ class ConditionReport extends StatelessWidget {
     if (condition.thisWeek.isNotEmpty) {
       out
         ..add(const SizedBox(height: Insets.section))
-        ..add(SectionHead(
-          icon: AppIcons.thisWeek,
-          label: l.thisWeek,
-        ))
+        ..add(SectionHead(icon: AppIcons.thisWeek, label: l.thisWeek))
         ..add(StepRail(steps: condition.thisWeek, accent: AppColor.steps));
     }
 
@@ -192,10 +196,7 @@ class ConditionReport extends StatelessWidget {
 
     out
       ..add(const SizedBox(height: Insets.section))
-      ..add(SectionHead(
-        icon: AppIcons.getHelp,
-        label: l.whenToCall,
-      ))
+      ..add(SectionHead(icon: AppIcons.getHelp, label: l.whenToCall))
       ..add(
         AppCard(
           child: Column(
@@ -219,29 +220,32 @@ class ConditionReport extends StatelessWidget {
     if (quality != null) {
       out
         ..add(const SizedBox(height: Insets.section))
-        ..add(SectionHead(
-          icon: AppIcons.photoQuality,
-          label: l.photoQuality,
-          color: AppColor.ink3,
-        ))
-        ..add(_QualityPanel(quality: quality!));
+        ..add(
+          SectionHead(
+            icon: AppIcons.photoQuality,
+            label: l.photoQuality,
+            color: AppColor.ink3,
+          ),
+        )
+        ..add(QualityPanel(quality: quality!));
     }
 
     if (scores != null && scores!.isNotEmpty) {
       out
         ..add(const SizedBox(height: Insets.section))
-        ..add(SectionHead(
-          icon: AppIcons.scores,
-          label: l.howScored,
-          color: AppColor.ink3,
-        ))
-        ..add(_Scores(scores: scores!, top: rawLabel))
+        ..add(
+          SectionHead(
+            icon: AppIcons.scores,
+            label: l.howScored,
+            color: AppColor.ink3,
+          ),
+        )
+        ..add(ScoreBars(scores: scores!, top: rawLabel))
         ..add(const SizedBox(height: 6))
         ..add(
           Row(
             children: <Widget>[
-              const Icon(AppIcons.onDevice,
-                  size: 14, color: AppColor.ink3),
+              const Icon(AppIcons.onDevice, size: 14, color: AppColor.ink3),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
@@ -258,15 +262,21 @@ class ConditionReport extends StatelessWidget {
   }
 }
 
-class _Verdict extends StatelessWidget {
+class VerdictCard extends StatelessWidget {
   final Condition condition;
   final double? confidence;
   final String? rawLabel;
 
-  const _Verdict({
+  /// False where the name is already on screen — the scan details page keeps
+  /// it in the strip above the tabs, and printing it twice was just noise.
+  final bool showName;
+
+  const VerdictCard({
+    super.key,
     required this.condition,
     required this.confidence,
     required this.rawLabel,
+    this.showName = true,
   });
 
   @override
@@ -294,20 +304,25 @@ class _Verdict extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Icon(severityIcon(condition), color: ink, size: 26),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  condition.name(l.lang),
-                  style: AppFont.display.copyWith(color: ink),
+          if (showName) ...<Widget>[
+            Row(
+              children: <Widget>[
+                Icon(severityIcon(condition), color: ink, size: 26),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    condition.name(l.lang),
+                    style: AppFont.display.copyWith(color: ink),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            const SizedBox(height: 9),
+          ],
+          Text(
+            condition.headline(l.lang),
+            style: showName ? AppFont.label : AppFont.h3.copyWith(color: ink),
           ),
-          const SizedBox(height: 9),
-          Text(condition.headline(l.lang), style: AppFont.label),
           if (confidence != null) ...<Widget>[
             const SizedBox(height: Insets.md),
             CertaintyMeter(
@@ -329,28 +344,31 @@ class _Verdict extends StatelessWidget {
 /// The previous version simply showed "Inconclusive" and left the farmer to
 /// guess whether that meant the photo, the bird, or the app. Naming the reason
 /// is what makes the next attempt better.
-class _HeldBack extends StatelessWidget {
+class HeldBackCallout extends StatelessWidget {
   final List<HeldBackReason> reasons;
 
-  const _HeldBack({required this.reasons});
+  const HeldBackCallout({super.key, required this.reasons});
 
   @override
   Widget build(BuildContext context) {
     final Lang lang = L.of(context).lang;
     String text(HeldBackReason r) => switch (r) {
-      HeldBackReason.lowConfidence => lang == Lang.tl
-          ? 'Hindi pa sapat na sigurado ang AI sa litratong ito.'
-          : 'The AI is not sure enough about this photo.',
-      HeldBackReason.tooCloseToCall => lang == Lang.tl
-          ? 'Dalawang sakit ang halos pareho ang score, kaya hindi ito '
-                'makapili nang tama.'
-          : 'Two sicknesses scored almost the same, so it cannot pick the '
-                'right one.',
-      HeldBackReason.healthyNeedsMore => lang == Lang.tl
-          ? 'Mas mahigpit ang app bago sabihing malusog, dahil mas delikado '
-                'kung mali ang "walang sakit".'
-          : 'The app is stricter before saying healthy, because a wrong '
-                '"no sickness" is the more dangerous mistake.',
+      HeldBackReason.lowConfidence =>
+        lang == Lang.tl
+            ? 'Hindi pa sapat na malinaw ang resulta para sa litratong ito.'
+            : 'The result for this photo is not clear enough yet.',
+      HeldBackReason.tooCloseToCall =>
+        lang == Lang.tl
+            ? 'Dalawang sakit ang halos pareho ang score, kaya hindi ito '
+                  'makapili nang tama.'
+            : 'Two sicknesses scored almost the same, so it cannot pick the '
+                  'right one.',
+      HeldBackReason.healthyNeedsMore =>
+        lang == Lang.tl
+            ? 'Mas mahigpit ang app bago sabihing malusog, dahil mas delikado '
+                  'kung mali ang "walang sakit".'
+            : 'The app is stricter before saying healthy, because a wrong '
+                  '"no sickness" is the more dangerous mistake.',
     };
 
     return Callout(
@@ -366,11 +384,12 @@ class _HeldBack extends StatelessWidget {
   }
 }
 
-class _Fact extends StatelessWidget {
+class FactTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  const _Fact({
+  const FactTile({
+    super.key,
     required this.icon,
     required this.label,
     required this.value,
@@ -406,10 +425,10 @@ class _Fact extends StatelessWidget {
   );
 }
 
-class _QualityPanel extends StatelessWidget {
+class QualityPanel extends StatelessWidget {
   final PhotoQuality quality;
 
-  const _QualityPanel({required this.quality});
+  const QualityPanel({super.key, required this.quality});
 
   @override
   Widget build(BuildContext context) {
@@ -438,61 +457,66 @@ class _QualityPanel extends StatelessWidget {
   }
 }
 
-class _Scores extends StatelessWidget {
+class ScoreBars extends StatelessWidget {
   final Map<String, double> scores;
   final String? top;
 
-  const _Scores({required this.scores, this.top});
+  const ScoreBars({super.key, required this.scores, this.top});
 
   @override
   Widget build(BuildContext context) {
     final Lang lang = L.of(context).lang;
     final List<MapEntry<String, double>> rows = scores.entries.toList()
-      ..sort((MapEntry<String, double> a, MapEntry<String, double> b) =>
-          b.value.compareTo(a.value));
+      ..sort(
+        (MapEntry<String, double> a, MapEntry<String, double> b) =>
+            b.value.compareTo(a.value),
+      );
 
     return Column(
-      children: rows.map((MapEntry<String, double> e) {
-        final bool isTop = top != null &&
-            e.key.toLowerCase() == top!.toLowerCase();
-        final Color ink = isTop ? AppColor.green700 : AppColor.ink3;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
+      children: rows
+          .map((MapEntry<String, double> e) {
+            final bool isTop =
+                top != null && e.key.toLowerCase() == top!.toLowerCase();
+            final Color ink = isTop ? AppColor.green700 : AppColor.ink3;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      conditionFor(e.key).name(lang),
-                      style: AppFont.bodySm.copyWith(
-                        color: isTop ? AppColor.ink : AppColor.ink2,
-                        fontWeight:
-                            isTop ? FontWeight.w500 : FontWeight.w400,
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          conditionFor(e.key).name(lang),
+                          style: AppFont.bodySm.copyWith(
+                            color: isTop ? AppColor.ink : AppColor.ink2,
+                            fontWeight: isTop
+                                ? FontWeight.w500
+                                : FontWeight.w400,
+                          ),
+                        ),
                       ),
-                    ),
+                      Text(
+                        '${(e.value * 100).toStringAsFixed(1)}%',
+                        style: AppFont.labelSm.copyWith(color: ink),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '${(e.value * 100).toStringAsFixed(1)}%',
-                    style: AppFont.labelSm.copyWith(color: ink),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(Insets.rFull),
+                    child: LinearProgressIndicator(
+                      value: e.value.clamp(0.0, 1.0),
+                      minHeight: 6,
+                      backgroundColor: AppColor.fill,
+                      valueColor: AlwaysStoppedAnimation<Color>(ink),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(Insets.rFull),
-                child: LinearProgressIndicator(
-                  value: e.value.clamp(0.0, 1.0),
-                  minHeight: 6,
-                  backgroundColor: AppColor.fill,
-                  valueColor: AlwaysStoppedAnimation<Color>(ink),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(growable: false),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }

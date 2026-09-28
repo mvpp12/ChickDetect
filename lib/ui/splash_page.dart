@@ -45,8 +45,10 @@ class _SplashPageState extends State<SplashPage>
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
-    precacheImage(const AssetImage(BrandMark.fullAsset), context)
-        .whenComplete(_go);
+    precacheImage(
+      const AssetImage(BrandMark.fullAsset),
+      context,
+    ).whenComplete(_go);
     _fallback = Timer(const Duration(milliseconds: 700), _go);
   }
 
@@ -76,17 +78,10 @@ class _SplashPageState extends State<SplashPage>
         ),
         child: Stack(
           children: <Widget>[
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _Horizon(),
-            ),
+            const Positioned(left: 0, right: 0, bottom: 0, child: _Horizon()),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Insets.xl,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: Insets.xl),
                 child: Column(
                   children: <Widget>[
                     const Spacer(flex: 3),
@@ -126,15 +121,14 @@ class _SplashPageState extends State<SplashPage>
                         return Column(
                           children: <Widget>[
                             ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(Insets.rFull),
+                              borderRadius: BorderRadius.circular(Insets.rFull),
                               child: LinearProgressIndicator(
                                 value: Curves.easeInOut.transform(_c.value),
                                 minHeight: 5,
-                                backgroundColor:
-                                    AppColor.green900.withValues(alpha: 0.1),
-                                valueColor:
-                                    const AlwaysStoppedAnimation<Color>(
+                                backgroundColor: AppColor.green900.withValues(
+                                  alpha: 0.1,
+                                ),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
                                   AppColor.green700,
                                 ),
                               ),
@@ -142,8 +136,9 @@ class _SplashPageState extends State<SplashPage>
                             const SizedBox(height: 12),
                             Text(
                               l.loadingModel,
-                              style: AppFont.bodySm
-                                  .copyWith(color: AppColor.ink3),
+                              style: AppFont.bodySm.copyWith(
+                                color: AppColor.ink3,
+                              ),
                             ),
                           ],
                         );
@@ -181,12 +176,16 @@ class _HorizonPainter extends CustomPainter {
     final Path p1 = Path()
       ..moveTo(0, size.height * 0.45)
       ..quadraticBezierTo(
-        size.width * 0.28, size.height * 0.1,
-        size.width * 0.55, size.height * 0.38,
+        size.width * 0.28,
+        size.height * 0.1,
+        size.width * 0.55,
+        size.height * 0.38,
       )
       ..quadraticBezierTo(
-        size.width * 0.82, size.height * 0.66,
-        size.width, size.height * 0.28,
+        size.width * 0.82,
+        size.height * 0.66,
+        size.width,
+        size.height * 0.28,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -198,12 +197,16 @@ class _HorizonPainter extends CustomPainter {
     final Path p2 = Path()
       ..moveTo(0, size.height * 0.72)
       ..quadraticBezierTo(
-        size.width * 0.3, size.height * 0.44,
-        size.width * 0.58, size.height * 0.66,
+        size.width * 0.3,
+        size.height * 0.44,
+        size.width * 0.58,
+        size.height * 0.66,
       )
       ..quadraticBezierTo(
-        size.width * 0.84, size.height * 0.86,
-        size.width, size.height * 0.58,
+        size.width * 0.84,
+        size.height * 0.86,
+        size.width,
+        size.height * 0.58,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)

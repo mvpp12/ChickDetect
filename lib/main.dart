@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/strings.dart';
 import 'core/theme.dart';
 import 'core/tokens.dart';
+import 'data/contacts.dart';
 import 'data/scan_store.dart';
 import 'ml/classifier.dart';
 import 'ui/guide_intro_page.dart';
@@ -38,6 +39,7 @@ class ChickDetectApp extends StatefulWidget {
 class _ChickDetectAppState extends State<ChickDetectApp> {
   final LanguageController _language = LanguageController();
   late final ScanStore _store = widget.store ?? ScanStore();
+  final ContactStore _contacts = ContactStore();
   final Classifier _classifier = Classifier();
 
   /// null while we are still finding out; true once the guide has been seen.
@@ -65,6 +67,7 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
     // Language and records first: they decide what the first frame says.
     await _language.load();
     await _store.load();
+    await _contacts.load();
 
     bool seen = false;
     try {
@@ -106,6 +109,7 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
     _classifier.dispose();
     _language.dispose();
     _store.dispose();
+    _contacts.dispose();
     super.dispose();
   }
 
@@ -116,6 +120,7 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider<ScanStore>.value(value: _store),
+          ChangeNotifierProvider<ContactStore>.value(value: _contacts),
           Provider<Classifier>.value(value: _classifier),
         ],
         child: MaterialApp(

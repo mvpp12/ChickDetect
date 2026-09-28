@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../core/icons.dart';
 import '../core/strings.dart';
 import '../core/tokens.dart';
+import '../data/care.dart';
 import '../data/conditions.dart';
 import '../data/scan_record.dart';
 import '../data/scan_store.dart';
@@ -416,7 +417,10 @@ class _Reticle extends StatelessWidget {
                 Alignment.bottomLeft,
                 Alignment.bottomRight,
               ])
-                Align(alignment: a, child: _Corner(align: a)),
+                Align(
+                  alignment: a,
+                  child: _Corner(align: a),
+                ),
             ],
           ),
         ),
@@ -495,10 +499,7 @@ class _Working extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            l.analysing,
-            style: AppFont.label.copyWith(color: Colors.white),
-          ),
+          Text(l.analysing, style: AppFont.label.copyWith(color: Colors.white)),
         ],
       ),
     ),
@@ -588,8 +589,7 @@ class _Dock extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: onRetake,
-                icon: const Icon(AppIcons.retake,
-                    size: 18),
+                icon: const Icon(AppIcons.retake, size: 18),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
@@ -667,9 +667,7 @@ class _RoundButton extends StatelessWidget {
         excludeSemantics: true,
         child: Material(
           color: active ? AppColor.mint : const Color(0x33FFFFFF),
-          shape: const CircleBorder(
-            side: BorderSide(color: Color(0x33FFFFFF)),
-          ),
+          shape: const CircleBorder(side: BorderSide(color: Color(0x33FFFFFF))),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
@@ -770,8 +768,11 @@ class _RejectedSheet extends StatelessWidget {
     final (String title, String fix, IconData icon) = switch (fault) {
       PhotoFault.blurred => (l.qualityBlur, l.qualityBlurFix, AppIcons.blurred),
       PhotoFault.tooDark => (l.qualityDark, l.qualityDarkFix, AppIcons.tooDark),
-      PhotoFault.tooBright =>
-        (l.qualityBright, l.qualityBrightFix, AppIcons.tooBright),
+      PhotoFault.tooBright => (
+        l.qualityBright,
+        l.qualityBrightFix,
+        AppIcons.tooBright,
+      ),
       PhotoFault.flat => (l.qualityFlat, l.qualityFlatFix, AppIcons.noSubject),
     };
 
@@ -790,8 +791,11 @@ class _RejectedSheet extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const Icon(AppIcons.rejected,
-                      color: AppColor.caution, size: 24),
+                  const Icon(
+                    AppIcons.rejected,
+                    color: AppColor.caution,
+                    size: 24,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -870,10 +874,7 @@ class _ResultSheet extends StatelessWidget {
 
     return SheetFrame(
       children: <Widget>[
-        Text(
-          l.scanResult,
-          style: AppFont.micro.copyWith(color: AppColor.ink3),
-        ),
+        Text(l.scanResult, style: AppFont.micro.copyWith(color: AppColor.ink3)),
         const SizedBox(height: 10),
         ConditionReport(
           condition: condition,
@@ -882,6 +883,11 @@ class _ResultSheet extends StatelessWidget {
           rawLabel: verdict.prediction?.label,
           heldBack: verdict.reasons,
         ),
+        if (!condition.isHealthy &&
+            !careFor(condition.key).isEmpty) ...<Widget>[
+          const SizedBox(height: Insets.section),
+          _CarePreview(condition: condition),
+        ],
         const SizedBox(height: Insets.section),
         Text(l.nameThisScan, style: AppFont.h3),
         const SizedBox(height: 12),
@@ -899,6 +905,58 @@ class _ResultSheet extends StatelessWidget {
           label: Text(l.scanAgain),
         ),
       ],
+    );
+  }
+}
+
+/// A short taste of the recommendations under a disease result: one line
+/// each for care, vitamins and food and water. The full set is on the
+/// Recommendations tab, one tap away through "See full details".
+class _CarePreview extends StatelessWidget {
+  final Condition condition;
+
+  const _CarePreview({required this.condition});
+
+  @override
+  Widget build(BuildContext context) {
+    final L l = L.of(context);
+    final CarePlan care = careFor(condition.key);
+    final List<(IconData, Say)> lines = <(IconData, Say)>[
+      if (care.supportive.isNotEmpty) (AppIcons.careKit, care.supportive.first),
+      if (care.supplements.isNotEmpty)
+        (AppIcons.supplements, care.supplements.first),
+      if (care.foodWater.isNotEmpty) (AppIcons.foodWater, care.foodWater.first),
+    ];
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              const Icon(AppIcons.tabCare, size: 18, color: AppColor.green700),
+              const SizedBox(width: 8),
+              Expanded(child: Text(l.careTitle, style: AppFont.h3)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final (IconData icon, Say say) in lines)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Icon(icon, size: 17, color: AppColor.ink2),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(say(l.lang), style: AppFont.bodySm)),
+                ],
+              ),
+            ),
+          Text(
+            l.careDisclaimer,
+            style: AppFont.labelSm.copyWith(color: AppColor.ink3),
+          ),
+        ],
+      ),
     );
   }
 }

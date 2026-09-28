@@ -42,10 +42,7 @@ class _ScanLabelsFormState extends State<ScanLabelsForm> {
 
   void _save() {
     context.read<ScanStore>().update(
-      widget.record.copyWith(
-        coop: _coop.text.trim(),
-        note: _note.text.trim(),
-      ),
+      widget.record.copyWith(coop: _coop.text.trim(), note: _note.text.trim()),
     );
   }
 
@@ -98,8 +95,9 @@ class _ScanLabelsFormState extends State<ScanLabelsForm> {
                       color: AppColor.green900,
                     ),
                     label: Text(c),
-                    labelStyle:
-                        AppFont.labelSm.copyWith(color: AppColor.green900),
+                    labelStyle: AppFont.labelSm.copyWith(
+                      color: AppColor.green900,
+                    ),
                     backgroundColor: AppColor.mintSoft,
                     side: const BorderSide(color: AppColor.mintLine),
                     onPressed: () => _pick(c),

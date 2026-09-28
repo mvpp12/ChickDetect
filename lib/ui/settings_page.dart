@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import '../core/icons.dart';
 import '../core/strings.dart';
 import '../core/tokens.dart';
+import '../data/contacts.dart';
 import '../data/scan_store.dart';
 import '../ml/classifier.dart';
 import '../ml/decision.dart';
 import 'widgets/common.dart';
+import 'widgets/vet_contacts.dart';
 
 /// Language, what the model is, and the data.
 ///
@@ -84,6 +86,35 @@ class SettingsPage extends StatelessWidget {
                       '${l.healthy.toLowerCase()}',
                 ),
               ],
+            ),
+          ),
+
+          // ── vet contacts ─────────────────────────────────────────────
+          // The same numbers the Vet Care tab dials, set up ahead of time.
+          const SizedBox(height: Insets.section),
+          _GroupLabel(icon: AppIcons.tabVet, label: l.contactsTitle),
+          Material(
+            color: AppColor.surface,
+            borderRadius: BorderRadius.circular(Insets.rLg),
+            clipBehavior: Clip.antiAlias,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(Insets.rLg),
+                border: Border.all(color: AppColor.line),
+              ),
+              child: _ActionRow(
+                icon: AppIcons.phone,
+                title: l.editNumbers,
+                subtitle: context.watch<ContactStore>().anySaved
+                    ? context
+                          .watch<ContactStore>()
+                          .all
+                          .where((VetContact c) => c.hasNumber)
+                          .map((VetContact c) => contactLabel(l, c.kind))
+                          .join(' · ')
+                    : l.contactsEmpty,
+                onTap: () => editContacts(context),
+              ),
             ),
           ),
 
@@ -194,10 +225,7 @@ class _LanguagePicker extends StatelessWidget {
   Widget build(BuildContext context) => Segmented<Lang>(
     value: current,
     onChanged: onPick,
-    options: const <(Lang, String)>[
-      (Lang.tl, 'Tagalog'),
-      (Lang.en, 'English'),
-    ],
+    options: const <(Lang, String)>[(Lang.tl, 'Tagalog'), (Lang.en, 'English')],
     height: Insets.tap,
   );
 }

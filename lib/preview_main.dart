@@ -61,14 +61,38 @@ List<ScanRecord> _samples() {
 
   // Oldest first; the store puts the newest at the top.
   return <ScanRecord>[
-    make(1, const Duration(days: 9), 'healthy', 'healthy', 0.93,
-        coop: 'Coop A'),
-    make(2, const Duration(days: 4, hours: 3), 'coccidiosis', 'disease', 0.81,
-        coop: 'Coop B'),
-    make(3, const Duration(days: 1, hours: 2), 'healthy', 'healthy', 0.90,
-        coop: 'Coop A'),
+    make(
+      1,
+      const Duration(days: 9),
+      'healthy',
+      'healthy',
+      0.93,
+      coop: 'Coop A',
+    ),
+    make(
+      2,
+      const Duration(days: 4, hours: 3),
+      'coccidiosis',
+      'disease',
+      0.81,
+      coop: 'Coop B',
+    ),
+    make(
+      3,
+      const Duration(days: 1, hours: 2),
+      'healthy',
+      'healthy',
+      0.90,
+      coop: 'Coop A',
+    ),
     make(4, const Duration(hours: 6), 'salmonella', 'inconclusive', 0.52),
-    make(5, const Duration(hours: 1), 'newcastle', 'disease', 0.88,
-        coop: 'Main layer house'),
+    make(
+      5,
+      const Duration(hours: 1),
+      'newcastle',
+      'disease',
+      0.88,
+      coop: 'Main layer house',
+    ),
   ];
 }

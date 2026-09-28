@@ -134,8 +134,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Bantayan din ang manok, hindi lang ang dumi',
-            'Watch the chicken, not just the dropping'),
+        Say(
+          'Bantayan din ang manok, hindi lang ang dumi',
+          'Watch the chicken, not just the dropping',
+        ),
         Say(
           'Kahit malinis ang scan, puwede pa ring may sakit. Tingnan kung '
               'kumakain, paano tumayo, at kung may kakaibang tunog sa gabi.',
@@ -191,26 +193,40 @@ const Map<String, Condition> kConditions = <String, Condition>{
     ),
     signs: <SignGroup>[
       SignGroup(Say('Sa dumi', 'In the droppings'), <Say>[
-        Say('Matingkad na berde o berdeng-dilaw, matubig',
-            'Bright green or yellow-green, watery'),
+        Say(
+          'Matingkad na berde o berdeng-dilaw, matubig',
+          'Bright green or yellow-green, watery',
+        ),
         Say('Minsan may kasamang dugo', 'Sometimes with blood'),
       ]),
       SignGroup(Say('Sa manok', 'In the chicken'), <Say>[
-        Say('Baluktot ang leeg, nakatagilid ang ulo, umiikot',
-            'Twisted neck, tilted head, walking in circles'),
+        Say(
+          'Baluktot ang leeg, nakatagilid ang ulo, umiikot',
+          'Twisted neck, tilted head, walking in circles',
+        ),
         Say('Hindi maigalaw ang pakpak o paa', 'Cannot move its wings or legs'),
-        Say('Hinihingal, umuubo, maingay ang paghinga',
-            'Gasping, coughing, noisy breathing'),
-        Say('Namamaga ang paligid ng mata at leeg',
-            'Swelling around the eyes and neck'),
+        Say(
+          'Hinihingal, umuubo, maingay ang paghinga',
+          'Gasping, coughing, noisy breathing',
+        ),
+        Say(
+          'Namamaga ang paligid ng mata at leeg',
+          'Swelling around the eyes and neck',
+        ),
       ]),
       SignGroup(Say('Sa lahat ng manok', 'Across your chickens'), <Say>[
-        Say('Biglang namamatay kahit walang senyales',
-            'Sudden deaths with no warning'),
-        Say('Kaunti na lang ang itlog; malambot o pangit ang balat',
-            'Far fewer eggs; soft or odd-shaped shells'),
-        Say('Maraming manok ang nagkakasakit sa loob ng ilang araw',
-            'Many chickens get sick within days'),
+        Say(
+          'Biglang namamatay kahit walang senyales',
+          'Sudden deaths with no warning',
+        ),
+        Say(
+          'Kaunti na lang ang itlog; malambot o pangit ang balat',
+          'Far fewer eggs; soft or odd-shaped shells',
+        ),
+        Say(
+          'Maraming manok ang nagkakasakit sa loob ng ilang araw',
+          'Many chickens get sick within days',
+        ),
       ]),
     ],
     firstDay: <ActionStep>[
@@ -255,7 +271,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
     ],
     thisWeek: <ActionStep>[
       ActionStep(
-        Say('Maglinis at mag-disinfect nang maayos', 'Clean and disinfect well'),
+        Say(
+          'Maglinis at mag-disinfect nang maayos',
+          'Clean and disinfect well',
+        ),
         Say(
           'Ilang linggong nabubuhay ang virus sa dumi at gamit. Kuskusin muna '
               'ang dumi, saka gumamit ng disinfectant mula sa agrivet. Hindi '
@@ -266,7 +285,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Itapon nang tama ang patay na manok', 'Get rid of dead chickens properly'),
+        Say(
+          'Itapon nang tama ang patay na manok',
+          'Get rid of dead chickens properly',
+        ),
         Say(
           'Sunugin o ibaon nang malalim, malayo sa tubig at sa ibang manok. '
               'Huwag ibenta, kainin o ipakain sa hayop.',
@@ -275,8 +297,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Magtanong sa beterinaryo tungkol sa bakuna',
-            'Ask a vet about vaccines'),
+        Say(
+          'Magtanong sa beterinaryo tungkol sa bakuna',
+          'Ask a vet about vaccines',
+        ),
         Say(
           'Ang bakuna ang proteksiyon ng mga natitirang manok. Ang beterinaryo '
               'ang dapat magsabi kung kailan at anong bakuna.',
@@ -344,28 +368,41 @@ const Map<String, Condition> kConditions = <String, Condition>{
     spread: Say('Mabilis kapag basa ang sahig', 'Fast when the floor is wet'),
     signs: <SignGroup>[
       SignGroup(Say('Sa dumi', 'In the droppings'), <Say>[
-        Say('May dugo — matingkad na pula, o maitim at malagkit',
-            'Blood — bright red, or dark and sticky'),
-        Say('May sipon, o parang kulay-kahel na balat',
-            'Slime, or orange-brown bits of gut lining'),
+        Say(
+          'May dugo — matingkad na pula, o maitim at malagkit',
+          'Blood — bright red, or dark and sticky',
+        ),
+        Say(
+          'May sipon, o parang kulay-kahel na balat',
+          'Slime, or orange-brown bits of gut lining',
+        ),
         Say('Malabnaw at matubig', 'Runny and watery'),
       ]),
       SignGroup(Say('Sa manok', 'In the chicken'), <Say>[
         Say('Maputla ang palong at paa', 'Pale comb and legs'),
-        Say('Nakayuko, gusot ang balahibo, ayaw gumalaw',
-            'Hunched, fluffed-up feathers, does not want to move'),
+        Say(
+          'Nakayuko, gusot ang balahibo, ayaw gumalaw',
+          'Hunched, fluffed-up feathers, does not want to move',
+        ),
         Say('Walang gana, pumapayat', 'Not eating, losing weight'),
       ]),
       SignGroup(Say('Sa lahat ng manok', 'Across your chickens'), <Say>[
-        Say('Hindi na lumalaki ang magkakasing-edad na manok',
-            'Chickens of the same age stop growing'),
-        Say('Dumarami ang namamatay sa loob ng ilang araw',
-            'More deaths over a few days'),
+        Say(
+          'Hindi na lumalaki ang magkakasing-edad na manok',
+          'Chickens of the same age stop growing',
+        ),
+        Say(
+          'Dumarami ang namamatay sa loob ng ilang araw',
+          'More deaths over a few days',
+        ),
       ]),
     ],
     firstDay: <ActionStep>[
       ActionStep(
-        Say('Ilipat sa malinis at tuyong sahig', 'Move them to a clean, dry floor'),
+        Say(
+          'Ilipat sa malinis at tuyong sahig',
+          'Move them to a clean, dry floor',
+        ),
         Say(
           'Kailangan ng parasite ang basa para kumalat. Ang tuyong sahig ang '
               'pinakamabilis na pampahinto — mas mabilis pa sa gamot.',
@@ -383,8 +420,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Tanungin ang beterinaryo kung anong gamot',
-            'Ask a vet which medicine to use'),
+        Say(
+          'Tanungin ang beterinaryo kung anong gamot',
+          'Ask a vet which medicine to use',
+        ),
         Say(
           'May gamot ito, pero ang tamang gamot at dami ay depende sa edad ng '
               'manok.',
@@ -413,8 +452,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Linisin at patuyuin bago ang susunod na batch',
-            'Clean and dry before the next batch'),
+        Say(
+          'Linisin at patuyuin bago ang susunod na batch',
+          'Clean and dry before the next batch',
+        ),
         Say(
           'Ilang buwang nabubuhay ang itlog ng parasite sa sahig. Alisin lahat '
               'ng lumang sapin, linisin, at patuyuin bago pumasok ang bagong '
@@ -500,16 +541,22 @@ const Map<String, Condition> kConditions = <String, Condition>{
         Say('Minsan dumidikit sa puwit', 'Sometimes stuck around the bottom'),
       ]),
       SignGroup(Say('Sa manok', 'In the chicken'), <Say>[
-        Say('Nagsisiksikan sa mainit, gusot ang balahibo',
-            'Crowding near warmth, fluffed-up feathers, droopy wings'),
-        Say('Ayaw kumain pero madalas uminom',
-            'Not eating but drinking more than usual'),
+        Say(
+          'Nagsisiksikan sa mainit, gusot ang balahibo',
+          'Crowding near warmth, fluffed-up feathers, droopy wings',
+        ),
+        Say(
+          'Ayaw kumain pero madalas uminom',
+          'Not eating but drinking more than usual',
+        ),
         Say('Mabagal lumaki ang sisiw', 'Chicks grow slowly'),
       ]),
       SignGroup(Say('Sa lahat ng manok', 'Across your chickens'), <Say>[
         Say('Sisiw ang kadalasang namamatay', 'Most deaths are chicks'),
-        Say('May mga mukhang normal pero nakakahawa pa rin',
-            'Some look normal but still spread it'),
+        Say(
+          'May mga mukhang normal pero nakakahawa pa rin',
+          'Some look normal but still spread it',
+        ),
       ]),
     ],
     firstDay: <ActionStep>[
@@ -522,7 +569,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Linisin at palitan ang tubig sa inuman', 'Clean and refill the drinkers'),
+        Say(
+          'Linisin at palitan ang tubig sa inuman',
+          'Clean and refill the drinkers',
+        ),
         Say(
           'Kuskusin, i-disinfect, at lagyan ng malinis na tubig. Ang maruming '
               'tubig ang paulit-ulit na nagpapasakit sa mga manok.',
@@ -577,8 +627,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
         ),
       ),
       ActionStep(
-        Say('Magtanong muna sa beterinaryo bago magpagamot',
-            'Ask a vet before giving medicine'),
+        Say(
+          'Magtanong muna sa beterinaryo bago magpagamot',
+          'Ask a vet before giving medicine',
+        ),
         Say(
           'Puwedeng kailangan ng antibiotic — pero may araw na dapat hintayin '
               'bago puwedeng ibenta ang karne at itlog. Ang maling gamot ay '
@@ -627,10 +679,10 @@ const Map<String, Condition> kConditions = <String, Condition>{
       'A clearer photo is needed to be sure',
     ),
     detail: Say(
-      'Hindi pa sapat na sigurado ang AI sa litratong ito. Tungkol ito sa '
+      'Hindi pa sapat na malinaw ang resulta sa litratong ito. Tungkol ito sa '
           'litrato, hindi sa manok — puwedeng malusog ang manok mo, puwede ring '
           'hindi. Mas malinaw na kuha ang kailangan para malaman.',
-      'The AI is not sure enough about this photo. This is about the photo, '
+      'The result for this photo is not clear enough yet. This is about the photo, '
           'not the chicken — your chicken may be healthy or it may not. A '
           'clearer photo is what it needs to tell.',
     ),

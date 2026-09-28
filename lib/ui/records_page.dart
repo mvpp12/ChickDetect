@@ -68,9 +68,9 @@ class _RecordsPageState extends State<RecordsPage> {
   void _toggleFilter(String status) =>
       setState(() => _filter = _filter == status ? 'all' : status);
 
-  void _open(ScanRecord r) => Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => DetailPage(recordId: r.id)),
-  );
+  void _open(ScanRecord r) => Navigator.of(
+    context,
+  ).push(MaterialPageRoute<void>(builder: (_) => DetailPage(recordId: r.id)));
 
   @override
   Widget build(BuildContext context) {
@@ -84,17 +84,21 @@ class _RecordsPageState extends State<RecordsPage> {
 
     final List<ScanRecord> inWindow = store.within(_windowSpan);
 
-    final List<ScanRecord> shown = inWindow.where((ScanRecord r) {
-      if (_filter != 'all' && r.status != _filter) return false;
-      if (_query.isEmpty) return true;
-      final String q = _query.toLowerCase();
-      final String number =
-          '#${store.numberOf(r).toString().padLeft(3, '0')}';
-      return r.coop.toLowerCase().contains(q) ||
-          r.note.toLowerCase().contains(q) ||
-          number.contains(q) ||
-          conditionFor(r.conditionKey).name(l.lang).toLowerCase().contains(q);
-    }).toList(growable: false);
+    final List<ScanRecord> shown = inWindow
+        .where((ScanRecord r) {
+          if (_filter != 'all' && r.status != _filter) return false;
+          if (_query.isEmpty) return true;
+          final String q = _query.toLowerCase();
+          final String number =
+              '#${store.numberOf(r).toString().padLeft(3, '0')}';
+          return r.coop.toLowerCase().contains(q) ||
+              r.note.toLowerCase().contains(q) ||
+              number.contains(q) ||
+              conditionFor(
+                r.conditionKey,
+              ).name(l.lang).toLowerCase().contains(q);
+        })
+        .toList(growable: false);
 
     final String? filterLabel = switch (_filter) {
       'healthy' => l.healthy,
@@ -174,8 +178,7 @@ class _RecordsPageState extends State<RecordsPage> {
             ),
             child: Column(
               children: <Widget>[
-                const Icon(AppIcons.noResults,
-                    size: 32, color: AppColor.ink3),
+                const Icon(AppIcons.noResults, size: 32, color: AppColor.ink3),
                 const SizedBox(height: 10),
                 Text(
                   l.noMatches,
@@ -213,8 +216,9 @@ class _RecordsPageState extends State<RecordsPage> {
     final DateTime day = DateUtils.dateOnly(d);
     if (day == today) return l.today;
     if (day == today.subtract(const Duration(days: 1))) return l.yesterday;
-    return DateFormat(day.year == today.year ? 'EEE, d MMM' : 'd MMM y')
-        .format(day);
+    return DateFormat(
+      day.year == today.year ? 'EEE, d MMM' : 'd MMM y',
+    ).format(day);
   }
 
   /// The equivalent window immediately before this one, for the trend line.
@@ -272,20 +276,20 @@ class _HealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final L l = L.of(context);
-    final int healthy =
-        inWindow.where((ScanRecord r) => r.status == 'healthy').length;
-    final int retakes =
-        inWindow.where((ScanRecord r) => r.status == 'inconclusive').length;
+    final int healthy = inWindow
+        .where((ScanRecord r) => r.status == 'healthy')
+        .length;
+    final int retakes = inWindow
+        .where((ScanRecord r) => r.status == 'inconclusive')
+        .length;
     final List<ScanRecord> sickList = inWindow
         .where((ScanRecord r) => r.status == 'disease')
         .toList(growable: false);
     final int sick = sickList.length;
-    final int sinceLast =
-        DateTime.now().difference(lastScan).inDays;
+    final int sinceLast = DateTime.now().difference(lastScan).inDays;
 
     // ── 1. the headline ──────────────────────────────────────────────────
-    final (String headline, IconData icon, Color ink, Color fill) =
-        sick > 0
+    final (String headline, IconData icon, Color ink, Color fill) = sick > 0
         ? (
             l.sickFound(sick, days),
             AppIcons.serious,
@@ -306,12 +310,7 @@ class _HealthCard extends StatelessWidget {
             AppColor.caution,
             AppColor.cautionSoft,
           )
-        : (
-            l.noScansIn(days),
-            AppIcons.scan,
-            AppColor.ink2,
-            AppColor.fill,
-          );
+        : (l.noScansIn(days), AppIcons.scan, AppColor.ink2, AppColor.fill);
 
     // ── 5. the trend, only when it has something to say ───────────────────
     final double? now = ScanStore.healthyShare(inWindow);
@@ -603,8 +602,7 @@ class _Count extends StatelessWidget {
                   ),
                 ),
                 if (value > 0)
-                  const Icon(AppIcons.chevron,
-                      size: 14, color: AppColor.ink3),
+                  const Icon(AppIcons.chevron, size: 14, color: AppColor.ink3),
               ],
             ),
           ),
@@ -682,11 +680,7 @@ class _Row extends StatelessWidget {
   final int number;
   final VoidCallback onTap;
 
-  const _Row({
-    required this.record,
-    required this.number,
-    required this.onTap,
-  });
+  const _Row({required this.record, required this.number, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -728,9 +722,8 @@ class _Row extends StatelessWidget {
                             // long log of full-resolution photos is what makes
                             // a cheap phone stutter on scroll.
                             cacheWidth: 168,
-                            errorBuilder: (_, _, _) => const _Thumb(
-                              icon: AppIcons.imageBroken,
-                            ),
+                            errorBuilder: (_, _, _) =>
+                                const _Thumb(icon: AppIcons.imageBroken),
                           ),
                   ),
                 ),
@@ -743,8 +736,7 @@ class _Row extends StatelessWidget {
                       // What was found leads; where and when is the subtitle.
                       Row(
                         children: <Widget>[
-                          Icon(statusIcon(record.status),
-                              size: 16, color: ink),
+                          Icon(statusIcon(record.status), size: 16, color: ink),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -767,22 +759,25 @@ class _Row extends StatelessWidget {
                                 coop,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppFont.bodySm
-                                    .copyWith(color: AppColor.ink),
+                                style: AppFont.bodySm.copyWith(
+                                  color: AppColor.ink,
+                                ),
                               ),
                             ),
                             Text(
                               '  ·  ',
-                              style: AppFont.bodySm
-                                  .copyWith(color: AppColor.ink3),
+                              style: AppFont.bodySm.copyWith(
+                                color: AppColor.ink3,
+                              ),
                             ),
                           ],
                           Text(
                             '$tag  ·  '
                             '${DateFormat('h:mm a').format(record.at)}',
                             maxLines: 1,
-                            style:
-                                AppFont.bodySm.copyWith(color: AppColor.ink3),
+                            style: AppFont.bodySm.copyWith(
+                              color: AppColor.ink3,
+                            ),
                           ),
                         ],
                       ),

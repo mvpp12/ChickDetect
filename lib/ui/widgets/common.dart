@@ -113,53 +113,55 @@ class Segmented<T> extends StatelessWidget {
       borderRadius: BorderRadius.circular(Insets.rFull),
     ),
     child: Row(
-      children: options.map(((T, String) o) {
-        final bool on = o.$1 == value;
-        return Expanded(
-          child: Semantics(
-            selected: on,
-            button: true,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              decoration: BoxDecoration(
-                color: on ? AppColor.surface : Colors.transparent,
-                borderRadius: BorderRadius.circular(Insets.rFull),
-                boxShadow: on
-                    ? <BoxShadow>[
-                        BoxShadow(
-                          color: AppColor.ink.withValues(alpha: 0.10),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+      children: options
+          .map(((T, String) o) {
+            final bool on = o.$1 == value;
+            return Expanded(
+              child: Semantics(
+                selected: on,
+                button: true,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  decoration: BoxDecoration(
+                    color: on ? AppColor.surface : Colors.transparent,
+                    borderRadius: BorderRadius.circular(Insets.rFull),
+                    boxShadow: on
+                        ? <BoxShadow>[
+                            BoxShadow(
+                              color: AppColor.ink.withValues(alpha: 0.10),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(Insets.rFull),
+                      onTap: () => onChanged(o.$1),
+                      child: Container(
+                        constraints: BoxConstraints(minHeight: height - 6),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          o.$2,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppFont.label.copyWith(
+                            color: on ? AppColor.green900 : AppColor.ink2,
+                            fontWeight: on ? FontWeight.w700 : FontWeight.w500,
+                          ),
                         ),
-                      ]
-                    : null,
-              ),
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(Insets.rFull),
-                  onTap: () => onChanged(o.$1),
-                  child: Container(
-                    constraints: BoxConstraints(minHeight: height - 6),
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Text(
-                      o.$2,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppFont.label.copyWith(
-                        color: on ? AppColor.green900 : AppColor.ink2,
-                        fontWeight: on ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      }).toList(growable: false),
+            );
+          })
+          .toList(growable: false),
     ),
   );
 }
@@ -227,10 +229,7 @@ class PageTitle extends StatelessWidget {
             ],
           ),
         ),
-        if (trailing != null) ...<Widget>[
-          const SizedBox(width: 10),
-          trailing!,
-        ],
+        if (trailing != null) ...<Widget>[const SizedBox(width: 10), trailing!],
       ],
     ),
   );
@@ -283,8 +282,7 @@ class DoDont extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(good ? AppIcons.check : AppIcons.cross,
-              size: 14, color: ink),
+          Icon(good ? AppIcons.check : AppIcons.cross, size: 14, color: ink),
           const SizedBox(width: 6),
           Flexible(
             child: Text(label, style: AppFont.labelSm.copyWith(color: ink)),
@@ -359,8 +357,9 @@ class CertaintyMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final L l = L.of(context);
-    final Color ink =
-        passed ? (this.ink ?? AppColor.green700) : AppColor.caution;
+    final Color ink = passed
+        ? (this.ink ?? AppColor.green700)
+        : AppColor.caution;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -396,16 +395,14 @@ class CertaintyMeter extends StatelessWidget {
                     tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
                     duration: const Duration(milliseconds: 620),
                     curve: Curves.easeOutCubic,
-                    builder: (BuildContext _, double v, Widget? _) =>
-                        Container(
-                          height: 10,
-                          width: w * v,
-                          decoration: BoxDecoration(
-                            color: ink,
-                            borderRadius:
-                                BorderRadius.circular(Insets.rFull),
-                          ),
-                        ),
+                    builder: (BuildContext _, double v, Widget? _) => Container(
+                      height: 10,
+                      width: w * v,
+                      decoration: BoxDecoration(
+                        color: ink,
+                        borderRadius: BorderRadius.circular(Insets.rFull),
+                      ),
+                    ),
                   ),
                   Positioned(
                     left: markX - 1,

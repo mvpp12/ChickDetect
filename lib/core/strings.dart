@@ -91,8 +91,10 @@ class L {
   String get flow2Title =>
       _p('Sinusuri sa telepono mo', 'Checked on your phone');
   String get flow2Body => _p(
-    'Ang AI ay nasa loob ng telepono, ilang segundo lang. Titingnan muna nito kung malinaw ang litrato. Kapag malabo o madilim, sasabihin nito agad — hindi ito manghuhula.',
-    'The AI runs inside your phone and takes a few seconds. It first checks that the photo is clear. If it is blurry or dark, it tells you — it will not guess.',
+    'Sa telepono mismo sinusuri ang litrato, ilang segundo lang. Titingnan muna '
+        'ng app kung malinaw ito. Kapag malabo o madilim, sasabihin nito agad.',
+    'The photo is checked right on your phone in a few seconds. The app first '
+        'makes sure it is clear. If it is blurry or dark, it tells you straight away.',
   );
 
   String get flow3Title =>
@@ -104,8 +106,10 @@ class L {
 
   String get rule1Title => _p('Sariwang dumi', 'Fresh droppings');
   String get rule1Body => _p(
-    'Kunan sa loob ng 10 hanggang 20 minuto matapos lumabas. Nag-iiba ang kulay at hugis ng tuyong dumi, kaya nagkakamali ang AI.',
-    'Take it within 10 to 20 minutes after it comes out. Dry droppings change colour and shape, and the AI gets confused.',
+    'Kunan sa loob ng 10 hanggang 20 minuto matapos lumabas. Nag-iiba ang kulay '
+        'at hugis ng tuyong dumi, kaya puwedeng magkamali ang resulta.',
+    'Take it within 10 to 20 minutes after it comes out. Dry droppings change '
+        'colour and shape, which can make the result wrong.',
   );
   String get rule1Do => _p('Basa at sariwa', 'Wet and fresh');
   String get rule1Dont => _p('Tuyo o luma', 'Dried or old');
@@ -145,7 +149,7 @@ class L {
   String get cameraUnavailable =>
       _p('Walang magamit na kamera', 'No camera available');
   String get modelUnavailable =>
-      _p('Hindi gumana ang AI', 'The AI did not start');
+      _p('Hindi gumana ang pagsusuri', 'The checker did not start');
   String get phoneOnly => _p(
     'Sa phone app lang gumagana ang pag-scan',
     'Scanning only works in the phone app',
@@ -164,8 +168,8 @@ class L {
   String get photoRejected =>
       _p('Kunan ulit ang litrato', 'Please take the photo again');
   String get photoRejectedWhy => _p(
-    'Hindi ito sinuri ng AI. Mas mabuting kumuha ng bagong litrato kaysa manghula sa malabo.',
-    'The AI did not check it. A new photo is better than a guess from a bad one.',
+    'Hindi pa ito sinuri. Kailangan ng malinaw na litrato para sa tamang resulta.',
+    'It was not checked yet. A clear photo is needed for a reliable result.',
   );
   String get qualityBlur => _p('Malabo ang kuha', 'The photo is blurry');
   String get qualityBlurFix => _p(
@@ -174,8 +178,10 @@ class L {
   );
   String get qualityDark => _p('Masyadong madilim', 'Too dark');
   String get qualityDarkFix => _p(
-    'Buksan ang ilaw ng telepono o lumipat sa maliwanag. Sa dilim, kulay lang ang nakikita ng AI.',
-    'Turn on the phone light or move to a brighter spot. In the dark the AI only sees colour.',
+    'Buksan ang ilaw ng telepono o lumipat sa maliwanag. Sa dilim, kulay lang ang '
+        'nakikita sa litrato.',
+    'Turn on the phone light or move to a brighter spot. In the dark only colour '
+        'shows in the photo.',
   );
   String get qualityBright => _p('Sobrang liwanag', 'Too bright');
   String get qualityBrightFix => _p(
@@ -210,10 +216,11 @@ class L {
   String get neverDo => _p('Huwag gagawin', 'Never do this');
   String get whenToCall =>
       _p('Kailan tatawag sa beterinaryo', 'When to call a vet');
-  String get howScored => _p('Mga score ng AI', 'The AI\'s scores');
+  String get howScored => _p('Mga iskor', 'The scores');
   String get notADiagnosis => _p(
-    'Litrato lang ang tinitingnan ng app. Hindi nito kayang palitan ang beterinaryo.',
-    'This app only looks at a photo. It cannot replace a vet.',
+    'Tumutulong ang ChickDetect sa maagang pagtuklas; ang beterinaryo pa rin '
+        'ang magkukumpirma.',
+    'ChickDetect helps with early detection; a vet makes the final call.',
   );
   String get analysedHere => _p(
     'Sinuri sa telepono mo — walang internet',
@@ -294,10 +301,8 @@ class L {
     'Walang nakitang sakit ${period(days)}',
     'No sickness found ${period(days)}',
   );
-  String noScansIn(int? days) => _p(
-    'Walang scan ${period(days)}',
-    'No scans ${period(days)}',
-  );
+  String noScansIn(int? days) =>
+      _p('Walang scan ${period(days)}', 'No scans ${period(days)}');
   String get noClearResults => _p(
     'Wala pang malinaw na resulta — kunan ulit',
     'No clear results yet — take the photos again',
@@ -312,8 +317,7 @@ class L {
   );
   String get scanNow => _p('Mag-scan na', 'Scan now');
   String get latest => _p('Pinakabago', 'Latest');
-  String get tapToFilter =>
-      _p('Pindutin para makita', 'Tap to see them');
+  String get tapToFilter => _p('Pindutin para makita', 'Tap to see them');
   String get showing => _p('Ipinapakita', 'Showing');
   String get showAll => _p('Ipakita lahat', 'Show all');
   String get trendBetter => _p('Gumaganda kumpara noon', 'Better than before');
@@ -334,14 +338,20 @@ class L {
   String get conditionsCovered =>
       _p('Mga sakit na kayang makita', 'Sicknesses it can spot');
   String get conditionsCoveredSub => _p(
-    'Tatlong sakit at malusog na dumi lang ang kilala ng AI. Wala nang iba.',
-    'The AI only knows three sicknesses and healthy droppings. Nothing else.',
+    'Tatlong sakit at malusog na dumi ang kayang makita ng ChickDetect.',
+    'ChickDetect can spot three sicknesses and healthy droppings.',
   );
   String get openGuide => _p('Buksan', 'Open');
   String get limitsTitle => _p('Ang hindi nito kaya', 'What it cannot do');
   String get limitsBody => _p(
-    'Apat na uri lang ng dumi ang natutunan ng AI. Kapag iba ang kinunan — sahig, pakain, o ang manok mismo — pipili pa rin ito ng isa sa apat. Kaya sinusuri muna ng app ang litrato, at mas mahigpit ito bago sabihing malusog.',
-    'The AI only learned four kinds of dropping. If you photograph something else — the floor, the feed, the chicken — it will still pick one of the four. That is why the app checks the photo first, and is stricter before it says healthy.',
+    'Apat na uri ng dumi ang natutunan ng ChickDetect. Kapag iba ang kinunan — '
+        'sahig, pakain, o ang manok mismo — pipili pa rin ito ng isa sa apat. Kaya '
+        'sinusuri muna ng app ang litrato, at mas mahigpit ito bago sabihing '
+        'malusog.',
+    'ChickDetect learned four kinds of dropping. If you photograph something '
+        'else — the floor, the feed, the chicken — it will still pick one of the '
+        'four. That is why the app checks the photo first, and is stricter before '
+        'it says healthy.',
   );
 
   // ── settings ───────────────────────────────────────────────────────────
@@ -351,7 +361,8 @@ class L {
     'Isang wika lang ang gagamitin sa buong app.',
     'The whole app uses one language.',
   );
-  String get modelOnPhone => _p('AI sa telepono', 'The AI on your phone');
+  String get modelOnPhone =>
+      _p('Pagsusuri sa telepono', 'Checking on your phone');
   String get replayGuide =>
       _p('Panoorin ulit ang gabay', 'Watch the guide again');
   String get resultsItGives =>
@@ -368,6 +379,147 @@ class L {
   // ── generic ────────────────────────────────────────────────────────────
   String get scans => _p('scan', 'scans');
   String get ofLabel => _p('sa', 'of');
+
+  // ── scan details: tabs ─────────────────────────────────────────────────
+  String get tabOverview => _p('Buod', 'Overview');
+  String get tabAnalysis => _p('Pagsusuri', 'Analysis');
+  String get tabCare => _p('Payo', 'Advice');
+  String get tabVet => _p('Beterinaryo', 'Vet');
+
+  // overview
+  String get statusLabel => _p('Lagay', 'Status');
+  String get scannedOn => _p('Na-scan', 'Scanned');
+  String get chickenAndCoop => _p('Manok at kulungan', 'Chicken and coop');
+  String get whatNext => _p('Susunod na titingnan', 'What to check next');
+  String get quickWhy => _p('Bakit ito ang resulta?', 'Why this result?');
+  String get quickDo => _p('Ano ang dapat gawin', 'What to do');
+  String get quickVet =>
+      _p('Kailan tatawag sa beterinaryo', 'When to call a vet');
+
+  // AI analysis
+  String get aiScore => _p('Iskor', 'Score');
+  String whyTitle(String name) => _p('Bakit $name?', 'Why $name?');
+  String get whyIntro => _p(
+    'Tinitingnan ng ChickDetect ang buong litrato at binibigyan ng iskor ang '
+        'bawat posibleng resulta. Narito ang mga nasukat para maintindihan mo '
+        'ang resulta.',
+    'ChickDetect looks at the whole photo and gives each possible result a '
+        'score. Here is what was measured, so you can understand the result.',
+  );
+  String get howCompared =>
+      _p('Paghahambing ng apat na resulta', 'How the four results compared');
+  String lead(int points) => _p(
+    'Lamang ng $points puntos sa kasunod na sagot',
+    '$points points ahead of the next answer',
+  );
+  String get leadClear => _p(
+    'Malinaw ang lamang — isang resulta lang ang tumugma nang husto.',
+    'A clear lead — one result stood out from the rest.',
+  );
+  String get leadNarrow => _p(
+    'Maliit ang lamang — magkalapit ang dalawang resulta, kaya bantayang mabuti.',
+    'A narrow lead — two results were close, so keep a close watch.',
+  );
+  String get coloursTitle =>
+      _p('Mga kulay sa gitna ng litrato', 'Colours in the middle of the photo');
+  String get coloursNote => _p(
+    'Sinukat mula sa litrato. Ihambing sa karaniwang itsura sa ibaba.',
+    'Measured from the photo. Compare it with the typical look below.',
+  );
+  String typicalFor(String name) =>
+      _p('Karaniwang dumi kapag $name', 'Typical droppings with $name');
+  String colourName(String family) => switch (family) {
+    'green' => _p('Berde', 'Green'),
+    'brown' => _p('Kayumanggi o maitim', 'Brown or dark'),
+    'white' => _p('Puti', 'White'),
+    'red' => _p('Pula', 'Red'),
+    _ => _p('Dilaw', 'Yellow'),
+  };
+  String get focusTitle =>
+      _p('Saang bahagi nakatuon ang pagsusuri', 'Where the check focused');
+  String get focusBody => _p(
+    'Tinatakpan ng app ang bawat bahagi ng litrato, isa-isa, at tinitingnan '
+        'kung gaano bumababa ang score. Mas matingkad = mas mahalaga sa sagot.',
+    'The app covers each part of the photo in turn and checks how much the '
+        'score drops. Brighter = mattered more to the answer.',
+  );
+  String get focusButton => _p('Ipakita', 'Show me');
+  String get focusWorking =>
+      _p('Sinusuri ang bawat bahagi…', 'Checking each part…');
+  String get focusPhoneOnly =>
+      _p('Sa phone app lang ito gumagana', 'This only works in the phone app');
+  String get focusNone => _p(
+    'Walang bahaging mas mahalaga kaysa sa iba.',
+    'No single part mattered more than the rest.',
+  );
+  String get noPhotoSaved =>
+      _p('Walang naka-save na litrato', 'No photo saved');
+  String get pleaseNote => _p('Paalala', 'Please note');
+  String get aiDisclaimer => _p(
+    'Paunang pagsusuri ang ChickDetect para matulungan kang makita agad ang '
+        'posibleng sakit. Hindi nito pinapalitan ang pagsusuri ng beterinaryo — '
+        'ipakumpirma sa kanila, lalo na kung nakakahawang sakit.',
+    'ChickDetect is a preliminary check that helps you spot possible disease '
+        'early. It does not replace a veterinarian\'s findings — have a vet '
+        'confirm it, especially for a disease that spreads.',
+  );
+
+  // confirming the answer
+  String get confirmTitle =>
+      _p('Tingnan ang manok para makumpirma', 'Check your chickens to confirm');
+  String get confirmNote => _p(
+    'Kung nakikita mo ang mga ito sa manok, mas malamang na tama ang resulta. '
+        'Ang may "Babala" ay dahilan para tumawag agad sa beterinaryo.',
+    'If you can see these in your chickens, the result is more likely right. '
+        'Anything marked "Warning sign" means call a vet right away.',
+  );
+  String get warningSign => _p('Babala', 'Warning sign');
+
+  // recommendations
+  String get careTitle => _p('Mga payo sa kalusugan', 'Health recommendations');
+  String get careDisclaimer => _p(
+    'Pangsuporta lang ang mga ito — hindi gamot o lunas, at hindi pamalit sa '
+        'beterinaryo.',
+    'These support your chickens\' health. They are not a treatment or a '
+        'cure, and they do not replace a vet.',
+  );
+  String get careSupportive => _p('Pag-aalaga', 'Supportive care');
+  String get careSupplements =>
+      _p('Bitamina at supplement', 'Vitamins and supplements');
+  String get careFood => _p('Pagkain at tubig', 'Food and water');
+  String get careIsolation => _p('Paghihiwalay', 'Keeping sick birds apart');
+  String get careMonitoring => _p('Ano ang babantayan', 'What to watch');
+
+  // vet care
+  String get callNowTitle =>
+      _p('Tumawag agad sa beterinaryo kung:', 'Call a vet right away if:');
+  String get forThisResult => _p('Para sa resultang ito', 'For this result');
+  String get needHelp => _p('Kailangan ng tulong?', 'Need help?');
+  String get contactVet => _p('Beterinaryo', 'Veterinarian');
+  String get contactPoultry =>
+      _p('Espesyalista sa manok', 'Poultry specialist');
+  String get contactOffice =>
+      _p('Opisina ng agrikultura o beterinaryo', 'Agriculture or vet office');
+  String callWho(String who) => _p('Tawagan: $who', 'Call $who');
+  String get addNumber => _p('Idagdag ang numero', 'Add number');
+  String get editNumbers => _p('Baguhin ang mga numero', 'Edit numbers');
+  String get contactsTitle => _p('Mga numero ng tulong', 'Vet contacts');
+  String get contactsNote => _p(
+    'I-save ang numero ng beterinaryo at opisina malapit sa inyo. Nasa '
+        'telepono lang ito.',
+    'Save the numbers of the vet and office near you. They stay on this '
+        'phone.',
+  );
+  String get contactsEmpty =>
+      _p('Wala pang naka-save na numero', 'No numbers saved yet');
+  String get nameOptional => _p('Pangalan (opsyonal)', 'Name (optional)');
+  String get phoneNumber => _p('Numero ng telepono', 'Phone number');
+  String get callFailed =>
+      _p('Hindi mabuksan ang tawag', 'Could not open the phone dialer');
+
+  // photo
+  String get tapToZoom =>
+      _p('Pindutin para makita nang buo', 'Tap to view full screen');
 
   String countScans(int n) => '$n ${_p('scan', n == 1 ? 'scan' : 'scans')}';
 }

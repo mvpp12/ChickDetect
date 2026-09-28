@@ -53,3 +53,4 @@ app.*.map.json
 /android/.gradle/
 /android/local.properties
 /Chapter3_ChickDetect_Research.docx
+/android/build/

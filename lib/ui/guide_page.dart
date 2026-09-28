@@ -34,10 +34,7 @@ class GuidePage extends StatelessWidget {
         PageTitle(title: l.guideTab, subtitle: l.guideTabSub),
 
         // ── the three rules ────────────────────────────────────────────
-        SectionHead(
-          icon: AppIcons.scan,
-          label: l.photoRules,
-        ),
+        SectionHead(icon: AppIcons.scan, label: l.photoRules),
         ...kPhotoRules.map((PhotoRule r) => _RuleCard(rule: r)),
         const SizedBox(height: 4),
         OutlinedButton.icon(
@@ -60,10 +57,7 @@ class GuidePage extends StatelessWidget {
 
         // ── the conditions ─────────────────────────────────────────────
         const SizedBox(height: Insets.section),
-        SectionHead(
-          icon: AppIcons.conditions,
-          label: l.conditionsCovered,
-        ),
+        SectionHead(icon: AppIcons.conditions, label: l.conditionsCovered),
         Text(
           l.conditionsCoveredSub,
           style: AppFont.bodySm.copyWith(color: AppColor.ink2),
@@ -192,8 +186,9 @@ class _ConditionCardState extends State<_ConditionCard> {
                               c.headline(l.lang),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: AppFont.labelSm
-                                  .copyWith(color: AppColor.ink3),
+                              style: AppFont.labelSm.copyWith(
+                                color: AppColor.ink3,
+                              ),
                             ),
                           ],
                         ),
@@ -220,16 +215,16 @@ class _ConditionCardState extends State<_ConditionCard> {
               child: !_open
                   ? const SizedBox(width: double.infinity)
                   : Container(
-                width: double.infinity,
-                color: AppColor.bg,
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-                // Reference reading, so the full report without the parts that
-                // only make sense attached to an actual scan.
-                child: ConditionReport(
-                  condition: c,
-                  depth: ReportDepth.full,
-                ),
-              ),
+                      width: double.infinity,
+                      color: AppColor.bg,
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+                      // Reference reading, so the full report without the parts that
+                      // only make sense attached to an actual scan.
+                      child: ConditionReport(
+                        condition: c,
+                        depth: ReportDepth.full,
+                      ),
+                    ),
             ),
           ],
         ),

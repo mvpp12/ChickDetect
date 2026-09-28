@@ -51,7 +51,9 @@ class _AppShellState extends State<AppShell> {
       body: Column(
         children: <Widget>[
           if (!onCamera) const _Header(),
-          Expanded(child: IndexedStack(index: _tab, children: pages)),
+          Expanded(
+            child: IndexedStack(index: _tab, children: pages),
+          ),
         ],
       ),
       bottomNavigationBar: _NavBar(current: _tab, onTap: _go),
@@ -87,9 +89,7 @@ class _Header extends StatelessWidget {
                 tooltip: l.openSettings,
                 icon: const Icon(AppIcons.settings),
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SettingsPage(),
-                  ),
+                  MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
                 ),
               ),
             ],
@@ -149,14 +149,16 @@ class _NavBar extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: on ? AppColor.mint : Colors.transparent,
-                            borderRadius:
-                                BorderRadius.circular(Insets.rFull),
+                            borderRadius: BorderRadius.circular(Insets.rFull),
                           ),
                           // Filled when selected, outline otherwise: the state
                           // is carried by shape as well as by colour, so it
                           // survives glare and colour blindness.
-                          child: Icon(on ? s.active : s.idle,
-                              size: 22, color: ink),
+                          child: Icon(
+                            on ? s.active : s.idle,
+                            size: 22,
+                            color: ink,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -165,8 +167,7 @@ class _NavBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: AppFont.labelSm.copyWith(
                             color: ink,
-                            fontWeight:
-                                on ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: on ? FontWeight.w700 : FontWeight.w500,
                           ),
                         ),
                       ],

@@ -88,8 +88,8 @@ class _GuideIntroPageState extends State<GuideIntroPage> {
     }
 
     final FlowStep step = kFlowSteps[_index];
-    final double photoHeight =
-        (MediaQuery.of(context).size.height * 0.46).clamp(260.0, 440.0);
+    final double photoHeight = (MediaQuery.of(context).size.height * 0.46)
+        .clamp(260.0, 440.0);
 
     // Light status-bar icons, because the photograph runs up behind them.
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -110,12 +110,15 @@ class _GuideIntroPageState extends State<GuideIntroPage> {
                       duration: const Duration(milliseconds: 350),
                       // Expand, or the photo keeps its own shape and floats
                       // in the middle with bands above and below it.
-                      layoutBuilder:
-                          (Widget? current, List<Widget> previous) => Stack(
+                      layoutBuilder: (Widget? current, List<Widget> previous) =>
+                          Stack(
                             fit: StackFit.expand,
                             children: <Widget>[...previous, ?current],
                           ),
-                      child: _Photo(key: ValueKey<int>(_index), asset: step.asset),
+                      child: _Photo(
+                        key: ValueKey<int>(_index),
+                        asset: step.asset,
+                      ),
                     ),
                     // Scrims: dark at the top so the bar and button read over
                     // any photo; page-coloured at the bottom so the photo
@@ -153,7 +156,8 @@ class _GuideIntroPageState extends State<GuideIntroPage> {
                                 child: _Progress(
                                   count: kFlowSteps.length,
                                   active: _index,
-                                  label: '${l.step} ${_index + 1} '
+                                  label:
+                                      '${l.step} ${_index + 1} '
                                       '${l.stepOf} ${kFlowSteps.length}',
                                 ),
                               ),
@@ -178,8 +182,7 @@ class _GuideIntroPageState extends State<GuideIntroPage> {
                   switchInCurve: Curves.easeOutCubic,
                   switchOutCurve: Curves.easeInCubic,
                   transitionBuilder: (Widget child, Animation<double> a) {
-                    final bool incoming =
-                        child.key == ValueKey<int>(_index);
+                    final bool incoming = child.key == ValueKey<int>(_index);
                     final double from = (_forward == incoming) ? 0.08 : -0.08;
                     return FadeTransition(
                       opacity: a,
@@ -192,8 +195,8 @@ class _GuideIntroPageState extends State<GuideIntroPage> {
                       ),
                     );
                   },
-                  layoutBuilder:
-                      (Widget? current, List<Widget> previous) => Stack(
+                  layoutBuilder: (Widget? current, List<Widget> previous) =>
+                      Stack(
                         alignment: Alignment.topLeft,
                         children: <Widget>[...previous, ?current],
                       ),
@@ -348,10 +351,7 @@ class _GlassButton extends StatelessWidget {
       // it is offered and turns into a tall bar down the photo.
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-        child: Text(
-          label,
-          style: AppFont.label.copyWith(color: Colors.white),
-        ),
+        child: Text(label, style: AppFont.label.copyWith(color: Colors.white)),
       ),
     ),
   );
@@ -391,9 +391,13 @@ class _StepText extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Expanded(child: _Compare(good: true, label: good, l: l)),
+                  Expanded(
+                    child: _Compare(good: true, label: good, l: l),
+                  ),
                   const SizedBox(width: 10),
-                  Expanded(child: _Compare(good: false, label: bad, l: l)),
+                  Expanded(
+                    child: _Compare(good: false, label: bad, l: l),
+                  ),
                 ],
               ),
             ),
@@ -523,13 +527,13 @@ class _OpeningScreen extends StatelessWidget {
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: AppColor.mintSoft,
-                                borderRadius:
-                                    BorderRadius.circular(Insets.rSm),
+                                borderRadius: BorderRadius.circular(Insets.rSm),
                               ),
                               child: Text(
                                 '${i + 1}',
-                                style: AppFont.h3
-                                    .copyWith(color: AppColor.green900),
+                                style: AppFont.h3.copyWith(
+                                  color: AppColor.green900,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 13),
@@ -552,7 +556,10 @@ class _OpeningScreen extends StatelessWidget {
               Insets.screen,
               Insets.lg,
             ),
-            child: ElevatedButton(onPressed: onStart, child: Text(l.startGuide)),
+            child: ElevatedButton(
+              onPressed: onStart,
+              child: Text(l.startGuide),
+            ),
           ),
         ],
       ),
