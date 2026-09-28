@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The top colour of the Flutter landing page, so Android's own launch
+         screen hands over to it without a visible change. -->
+    <color name="splash_background">#F7FAF8</color>
+</resources>
