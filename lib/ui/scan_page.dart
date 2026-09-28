@@ -12,6 +12,7 @@ import '../core/strings.dart';
 import '../core/tokens.dart';
 import '../data/care.dart';
 import '../data/conditions.dart';
+import '../data/photo_store.dart';
 import '../data/scan_record.dart';
 import '../data/scan_store.dart';
 import '../ml/classifier.dart';
@@ -67,19 +68,29 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   /// single most common "it broke on my phone" report for a Flutter camera.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final CameraController? c = _camera;
-    if (c == null || !c.value.isInitialized) return;
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
-      c.dispose();
+      final CameraController? c = _camera;
+      if (c == null) return;
       _camera = null;
       if (mounted) setState(() => _cameraReady = false);
+      c.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      _openCamera();
+      // This used to return early whenever there was no camera — which is
+      // exactly the state leaving the app puts it in — so coming back never
+      // reopened it and the viewfinder stayed dead until the app was killed
+      // from Recents. Returning from the gallery hit the same path.
+      if (_camera == null && !(kIsWeb && widget.modelFailed)) _openCamera();
     }
   }
 
+  /// True while a camera is being opened, so a quick leave-and-return cannot
+  /// start a second one alongside it.
+  bool _opening = false;
+
   Future<void> _openCamera() async {
+    if (_opening) return;
+    _opening = true;
     try {
       final List<CameraDescription> cameras = await availableCameras();
       if (cameras.isEmpty) {
@@ -97,7 +108,11 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
         enableAudio: false,
       );
       await c.initialize();
-      if (!mounted) {
+      // Left the app while the camera was starting: let it go now, and the
+      // return to the app opens a fresh one.
+      final bool inFront =
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+      if (!mounted || !inFront) {
         await c.dispose();
         return;
       }
@@ -114,6 +129,8 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
           _cameraReady = false;
         });
       }
+    } finally {
+      _opening = false;
     }
   }
 
@@ -222,9 +239,12 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     }
 
     final ScanStore store = context.read<ScanStore>();
+    // Out of the cache folder first, so the photo outlives Android's cleanup.
+    final String kept = await keepPhoto(imagePath);
+    if (!mounted) return;
     final ScanRecord record = ScanRecord.fromVerdict(
       verdict: verdict,
-      imagePath: imagePath,
+      imagePath: kept,
       coop: '',
       note: '',
     );

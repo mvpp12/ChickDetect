@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'photo_store.dart';
 import 'scan_record.dart';
 
 /// Scan history, kept on the phone.
@@ -53,14 +54,20 @@ class ScanStore extends ChangeNotifier {
   }
 
   Future<void> remove(int id) async {
+    final List<ScanRecord> gone =
+        _items.where((ScanRecord e) => e.id == id).toList(growable: false);
     _items = _items.where((ScanRecord e) => e.id != id).toList(growable: false);
     notifyListeners();
     await _persist();
+    for (final ScanRecord r in gone) {
+      await dropPhoto(r.imagePath);
+    }
   }
 
   Future<void> clear() async {
     _items = <ScanRecord>[];
     notifyListeners();
+    await dropAllPhotos();
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.remove(_key);
