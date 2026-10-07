@@ -466,7 +466,11 @@ class ScoreBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Lang lang = L.of(context).lang;
-    final List<MapEntry<String, double>> rows = scores.entries.toList()
+    // The four dropping results only; a "not a dropping" score is not a
+    // result to compare a disease against.
+    final List<MapEntry<String, double>> rows = scores.entries
+        .where((MapEntry<String, double> e) => e.key != 'not_dropping')
+        .toList()
       ..sort(
         (MapEntry<String, double> a, MapEntry<String, double> b) =>
             b.value.compareTo(a.value),

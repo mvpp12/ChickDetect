@@ -46,14 +46,17 @@ class Classifier {
   /// Input edge the graph expects. MobileNetV2 at 224×224.
   static const int inputSize = 224;
 
-  /// How pixels are scaled before they enter the graph.
+  /// How pixels are scaled before they enter the graph, read from the model.
   ///
-  /// This model has no normalisation baked in — its first op is a convolution
-  /// on the raw tensor — so the app has to match whatever the training script
-  /// did. `/255` puts pixels in 0..1, which is what the previous version used.
-  /// If the notebook used `mobilenet_v2.preprocess_input`, the correct range
-  /// is -1..1 and this is the one line that has to change.
-  static double _normalise(num channel) => channel / 255.0;
+  /// Models trained by training/train_model.py carry their own scaling layer
+  /// and name their input `image_0_255`: they take plain 0..255 RGB. The
+  /// original four-class model had no scaling inside it and was fed 0..1.
+  /// Deciding from the model file means the app can never pair a model with
+  /// the wrong scaling — the uncertainty that used to live in this comment.
+  bool _rawPixels = false;
+
+  double _normalise(num channel) =>
+      _rawPixels ? channel.toDouble() : channel / 255.0;
 
   Future<void> load() async {
     if (_ready) return;
@@ -64,11 +67,18 @@ class Classifier {
         .where((String l) => l.isNotEmpty)
         .toList(growable: false);
 
-    _interpreter = await ModelRunner.fromAsset('assets/models/model.tflite');
+    final ModelRunner runner =
+        await ModelRunner.fromAsset('assets/models/model.tflite');
+    _interpreter = runner;
+    _rawPixels = runner.inputName.contains('0_255');
     _ready = true;
 
     if (kDebugMode) {
-      debugPrint('Classifier ready: ${_labels.length} classes $_labels');
+      debugPrint(
+        'Classifier ready: ${_labels.length} classes $_labels, '
+        'input "${runner.inputName}", '
+        '${_rawPixels ? 'raw 0..255' : 'scaled 0..1'}',
+      );
     }
   }
 
@@ -85,7 +95,16 @@ class Classifier {
     if (decoded == null) {
       throw const FormatException('Could not decode the captured image');
     }
-    return img.copyResize(decoded, width: inputSize, height: inputSize);
+    // Phone cameras often save the photo sideways with an EXIF "rotate me"
+    // note; apply it so the model sees the scene the right way up. Then
+    // shrink by averaging pixels rather than picking every Nth one, which
+    // keeps the dropping's texture instead of aliasing it away.
+    return img.copyResize(
+      img.bakeOrientation(decoded),
+      width: inputSize,
+      height: inputSize,
+      interpolation: img.Interpolation.average,
+    );
   }
 
   Prediction _runResized(img.Image resized) {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -44,6 +45,37 @@ class _RecordsPageState extends State<RecordsPage> {
   String _query = '';
   String _filter = 'all';
   _Window _window = _Window.month;
+
+  /// Scans picked for deletion. Long-pressing a row starts picking; while
+  /// anything is picked, a tap toggles a row instead of opening it.
+  final Set<int> _selected = <int>{};
+  bool get _selecting => _selected.isNotEmpty;
+
+  void _toggle(ScanRecord r) => setState(() {
+    if (!_selected.remove(r.id)) _selected.add(r.id);
+  });
+
+  void _startSelecting(ScanRecord r) {
+    HapticFeedback.selectionClick();
+    setState(() => _selected.add(r.id));
+  }
+
+  Future<void> _deleteSelected(ScanStore store, List<ScanRecord> shown) async {
+    final L l = L.of(context);
+    final int n = _selected.length;
+    final bool everything = n == store.items.length;
+    final bool yes = await confirmDestructive(
+      context,
+      title: everything ? l.clearRecordsQ : l.deleteSelectedQ(n),
+      body: everything ? l.clearRecordsBody : l.deleteSelectedBody,
+      action: l.delete,
+    );
+    if (!yes || !mounted) return;
+    final Set<int> ids = <int>{..._selected};
+    setState(_selected.clear);
+    await store.removeMany(ids);
+    if (mounted) showToast(context, l.deletedCount(ids.length));
+  }
 
   @override
   void dispose() {
@@ -107,89 +139,147 @@ class _RecordsPageState extends State<RecordsPage> {
       _ => null,
     };
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        Insets.screen,
-        Insets.sm,
-        Insets.screen,
-        Insets.xxl,
-      ),
-      children: <Widget>[
-        PageTitle(title: l.records, subtitle: l.recordsSub),
-        _HealthCard(
-          window: _window,
-          days: _windowDays,
-          onWindow: (_Window w) => setState(() => _window = w),
-          inWindow: inWindow,
-          previous: _previousWindow(store),
-          lastScan: all.first.at,
-          filter: _filter,
-          onFilter: _toggleFilter,
-          onOpen: _open,
-          onScan: widget.onScan,
-          dayLabel: (DateTime d) => _dayLabel(l, d),
-        ),
-        const SizedBox(height: Insets.md),
-        TextField(
-          controller: _search,
-          onChanged: (String v) => setState(() => _query = v.trim()),
-          decoration: InputDecoration(
-            hintText: l.searchHint,
-            isDense: true,
-            prefixIcon: const Icon(AppIcons.search, size: 20),
-            suffixIcon: _query.isEmpty
-                ? null
-                : IconButton(
-                    tooltip: l.close,
-                    icon: const Icon(AppIcons.close, size: 18),
-                    onPressed: () {
-                      _search.clear();
-                      setState(() => _query = '');
-                    },
+    // Scans that disappeared (filters changed, or deleted elsewhere) drop
+    // out of the selection.
+    _selected.removeWhere((int id) => !all.any((ScanRecord r) => r.id == id));
+    final bool allShownPicked =
+        shown.isNotEmpty &&
+        shown.every((ScanRecord r) => _selected.contains(r.id));
+
+    return PopScope(
+      canPop: !_selecting,
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (!didPop && _selecting) setState(_selected.clear);
+      },
+      child: Column(
+        children: <Widget>[
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            child: !_selecting
+                ? const SizedBox(width: double.infinity)
+                : _SelectionBar(
+                    count: _selected.length,
+                    allPicked: allShownPicked,
+                    onCancel: () => setState(_selected.clear),
+                    onSelectAll: () => setState(() {
+                      if (allShownPicked) {
+                        _selected.clear();
+                      } else {
+                        _selected.addAll(shown.map((ScanRecord r) => r.id));
+                      }
+                    }),
+                    onDelete: () => _deleteSelected(store, shown),
                   ),
           ),
-        ),
-        // A visible, one-tap way back out of a filter set from the card.
-        if (filterLabel != null) ...<Widget>[
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: InputChip(
-              avatar: Icon(
-                statusIcon(_filter),
-                size: 16,
-                color: statusInk(_filter),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                Insets.screen,
+                Insets.sm,
+                Insets.screen,
+                Insets.xxl,
               ),
-              label: Text('${l.showing}: $filterLabel'),
-              labelStyle: AppFont.label.copyWith(color: AppColor.ink),
-              deleteIcon: const Icon(AppIcons.close, size: 16),
-              deleteButtonTooltipMessage: l.showAll,
-              onDeleted: () => setState(() => _filter = 'all'),
-              onPressed: () => setState(() => _filter = 'all'),
+              children: <Widget>[
+                PageTitle(title: l.records, subtitle: l.recordsSub),
+                _HealthCard(
+                  window: _window,
+                  days: _windowDays,
+                  onWindow: (_Window w) => setState(() => _window = w),
+                  inWindow: inWindow,
+                  previous: _previousWindow(store),
+                  lastScan: all.first.at,
+                  filter: _filter,
+                  onFilter: _toggleFilter,
+                  onOpen: _open,
+                  onScan: widget.onScan,
+                  dayLabel: (DateTime d) => _dayLabel(l, d),
+                ),
+                const SizedBox(height: Insets.md),
+                TextField(
+                  controller: _search,
+                  onChanged: (String v) => setState(() => _query = v.trim()),
+                  decoration: InputDecoration(
+                    hintText: l.searchHint,
+                    isDense: true,
+                    prefixIcon: const Icon(AppIcons.search, size: 20),
+                    suffixIcon: _query.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: l.close,
+                            icon: const Icon(AppIcons.close, size: 18),
+                            onPressed: () {
+                              _search.clear();
+                              setState(() => _query = '');
+                            },
+                          ),
+                  ),
+                ),
+                // A visible, one-tap way back out of a filter set from the card.
+                if (filterLabel != null) ...<Widget>[
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: InputChip(
+                      avatar: Icon(
+                        statusIcon(_filter),
+                        size: 16,
+                        color: statusInk(_filter),
+                      ),
+                      label: Text('${l.showing}: $filterLabel'),
+                      labelStyle: AppFont.label.copyWith(color: AppColor.ink),
+                      deleteIcon: const Icon(AppIcons.close, size: 16),
+                      deleteButtonTooltipMessage: l.showAll,
+                      onDeleted: () => setState(() => _filter = 'all'),
+                      onPressed: () => setState(() => _filter = 'all'),
+                    ),
+                  ),
+                ],
+                // How to delete, said once, where the list starts.
+                if (shown.isNotEmpty && !_selecting) ...<Widget>[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: <Widget>[
+                      const Icon(AppIcons.info, size: 15, color: AppColor.ink3),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l.longPressHint,
+                          style: AppFont.labelSm.copyWith(color: AppColor.ink3),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: Insets.lg),
+                if (shown.isEmpty)
+                  AppCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Insets.card,
+                      vertical: Insets.lg,
+                    ),
+                    child: Column(
+                      children: <Widget>[
+                        const Icon(
+                          AppIcons.noResults,
+                          size: 32,
+                          color: AppColor.ink3,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          l.noMatches,
+                          style: AppFont.body.copyWith(color: AppColor.ink2),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ..._grouped(l, store, shown),
+              ],
             ),
           ),
         ],
-        const SizedBox(height: Insets.lg),
-        if (shown.isEmpty)
-          AppCard(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Insets.card,
-              vertical: Insets.lg,
-            ),
-            child: Column(
-              children: <Widget>[
-                const Icon(AppIcons.noResults, size: 32, color: AppColor.ink3),
-                const SizedBox(height: 10),
-                Text(
-                  l.noMatches,
-                  style: AppFont.body.copyWith(color: AppColor.ink2),
-                ),
-              ],
-            ),
-          )
-        else
-          ..._grouped(l, store, shown),
-      ],
+      ),
     );
   }
 
@@ -205,7 +295,13 @@ class _RecordsPageState extends State<RecordsPage> {
         out.add(_DayHeading(label: _dayLabel(l, d), first: out.isEmpty));
       }
       out.add(
-        _Row(record: r, number: store.numberOf(r), onTap: () => _open(r)),
+        _Row(
+          record: r,
+          number: store.numberOf(r),
+          selected: _selected.contains(r.id),
+          onTap: () => _selecting ? _toggle(r) : _open(r),
+          onLongPress: () => _selecting ? _toggle(r) : _startSelecting(r),
+        ),
       );
     }
     return out;
@@ -678,9 +774,17 @@ class _DayHeading extends StatelessWidget {
 class _Row extends StatelessWidget {
   final ScanRecord record;
   final int number;
+  final bool selected;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
-  const _Row({required this.record, required this.number, required this.onTap});
+  const _Row({
+    required this.record,
+    required this.number,
+    required this.selected,
+    required this.onTap,
+    required this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -694,38 +798,61 @@ class _Row extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: AppColor.surface,
+        color: selected ? AppColor.mintSoft : AppColor.surface,
         borderRadius: BorderRadius.circular(Insets.rMd),
         child: InkWell(
           borderRadius: BorderRadius.circular(Insets.rMd),
           onTap: onTap,
+          onLongPress: onLongPress,
           child: Container(
             constraints: const BoxConstraints(minHeight: 76),
             padding: const EdgeInsets.fromLTRB(10, 10, 6, 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Insets.rMd),
-              border: Border.all(color: AppColor.line),
+              border: Border.all(
+                color: selected ? AppColor.green700 : AppColor.line,
+                width: selected ? 2 : 1,
+              ),
             ),
             child: Row(
               children: <Widget>[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(Insets.rSm),
-                  child: SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: record.imagePath.isEmpty
-                        ? const _Thumb(icon: AppIcons.image)
-                        : Image.file(
-                            File(record.imagePath),
-                            fit: BoxFit.cover,
-                            // Decode at thumbnail size, not camera size: a
-                            // long log of full-resolution photos is what makes
-                            // a cheap phone stutter on scroll.
-                            cacheWidth: 168,
-                            errorBuilder: (_, _, _) =>
-                                const _Thumb(icon: AppIcons.imageBroken),
+                Stack(
+                  children: <Widget>[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(Insets.rSm),
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: record.imagePath.isEmpty
+                            ? const _Thumb(icon: AppIcons.image)
+                            : Image.file(
+                                File(record.imagePath),
+                                fit: BoxFit.cover,
+                                // Decode at thumbnail size, not camera size: a
+                                // long log of full-resolution photos is what makes
+                                // a cheap phone stutter on scroll.
+                                cacheWidth: 168,
+                                errorBuilder: (_, _, _) =>
+                                    const _Thumb(icon: AppIcons.imageBroken),
+                              ),
+                      ),
+                    ),
+                    // The tick: selection shown by shape, not only by colour.
+                    if (selected)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColor.green900.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(Insets.rSm),
                           ),
-                  ),
+                          child: const Icon(
+                            AppIcons.check,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -881,6 +1008,60 @@ class _Empty extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Shown while scans are picked: how many, select-all, delete, cancel.
+class _SelectionBar extends StatelessWidget {
+  final int count;
+  final bool allPicked;
+  final VoidCallback onCancel;
+  final VoidCallback onSelectAll;
+  final VoidCallback onDelete;
+
+  const _SelectionBar({
+    required this.count,
+    required this.allPicked,
+    required this.onCancel,
+    required this.onSelectAll,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final L l = L.of(context);
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: AppColor.mintSoft,
+        border: Border(bottom: BorderSide(color: AppColor.mintLine)),
+      ),
+      padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
+      child: Row(
+        children: <Widget>[
+          IconButton(
+            tooltip: l.cancel,
+            icon: const Icon(AppIcons.close),
+            onPressed: onCancel,
+          ),
+          Expanded(
+            child: Text(
+              l.selectedCount(count),
+              style: AppFont.h3.copyWith(color: AppColor.green900),
+            ),
+          ),
+          TextButton(
+            onPressed: onSelectAll,
+            child: Text(allPicked ? l.selectNone : l.selectAll),
+          ),
+          IconButton(
+            tooltip: l.delete,
+            icon: const Icon(AppIcons.delete, color: AppColor.danger),
+            onPressed: onDelete,
+          ),
+        ],
+      ),
     );
   }
 }

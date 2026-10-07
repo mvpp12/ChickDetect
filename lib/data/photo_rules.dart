@@ -32,18 +32,18 @@ class FlowStep {
 /// The walkthrough shown after the landing card.
 const List<FlowStep> kFlowSteps = <FlowStep>[
   FlowStep(
-    asset: 'assets/onboarding/step_scan.png',
+    asset: 'assets/onboarding/step_scan.jpg',
     title: _f1t,
     body: _f1b,
     doLabel: _f1d,
     dontLabel: _f1n,
   ),
   FlowStep(
-    asset: 'assets/onboarding/step_analyze.png',
+    asset: 'assets/onboarding/step_analyze.jpg',
     title: _f2t,
     body: _f2b,
   ),
-  FlowStep(asset: 'assets/onboarding/step_result.png', title: _f3t, body: _f3b),
+  FlowStep(asset: 'assets/onboarding/step_result.jpg', title: _f3t, body: _f3b),
 ];
 
 /// One capture rule, for the Guide tab.

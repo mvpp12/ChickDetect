@@ -85,7 +85,6 @@ List<ScanRecord> _samples() {
       0.90,
       coop: 'Coop A',
     ),
-    make(4, const Duration(hours: 6), 'salmonella', 'inconclusive', 0.52),
     make(
       5,
       const Duration(hours: 1),

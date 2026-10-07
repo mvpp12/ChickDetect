@@ -238,6 +238,33 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
       return;
     }
 
+    // The model recognised the photo as something other than a dropping.
+    // Said plainly, not saved — there is no result to keep.
+    if (verdict.kind == VerdictKind.notDropping) {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext ctx) => const _NotDroppingSheet(),
+      );
+      if (mounted) _retake();
+      return;
+    }
+
+    // An unclear reading is shown, not saved. It says nothing about the
+    // chickens — only about the photo — so keeping it filled the records
+    // with "take another photo" rows that crowded out the real results.
+    if (verdict.kind == VerdictKind.inconclusive) {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext ctx) => _RetakeSheet(verdict: verdict),
+      );
+      if (mounted) _retake();
+      return;
+    }
+
     final ScanStore store = context.read<ScanStore>();
     // Out of the cache folder first, so the photo outlives Android's cleanup.
     final String kept = await keepPhoto(imagePath);
@@ -923,6 +950,117 @@ class _ResultSheet extends StatelessWidget {
           onPressed: onScanAgain,
           icon: const Icon(AppIcons.scan, size: 20),
           label: Text(l.scanAgain),
+        ),
+      ],
+    );
+  }
+}
+
+/// Shown when the model says the photo is not a chicken dropping at all.
+class _NotDroppingSheet extends StatelessWidget {
+  const _NotDroppingSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final L l = L.of(context);
+    return SheetFrame(
+      children: <Widget>[
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Insets.card + 2),
+          decoration: BoxDecoration(
+            color: AppColor.cautionSoft,
+            borderRadius: BorderRadius.circular(Insets.rXl),
+            border: Border.all(color: AppColor.caution.withValues(alpha: 0.28)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  const Icon(AppIcons.noSubject,
+                      color: AppColor.caution, size: 24),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l.notDroppingTitle,
+                      style: AppFont.h2.copyWith(color: AppColor.caution),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(l.notDroppingBody, style: AppFont.body),
+            ],
+          ),
+        ),
+        const SizedBox(height: Insets.md),
+        Row(
+          children: <Widget>[
+            const Icon(AppIcons.info, size: 16, color: AppColor.ink3),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                l.notSavedRetake,
+                style: AppFont.bodySm.copyWith(color: AppColor.ink2),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Insets.lg),
+        ElevatedButton.icon(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(AppIcons.scan, size: 20),
+          label: Text(l.retake),
+        ),
+      ],
+    );
+  }
+}
+
+/// Shown when the reading was not clear enough to report. Same result card
+/// as any other answer — why it was held back, and how to take a better
+/// photo — but nothing is saved, so there is nothing to name or open later.
+class _RetakeSheet extends StatelessWidget {
+  final Verdict verdict;
+
+  const _RetakeSheet({required this.verdict});
+
+  @override
+  Widget build(BuildContext context) {
+    final L l = L.of(context);
+    return SheetFrame(
+      children: <Widget>[
+        Text(
+          l.scanResult,
+          style: AppFont.micro.copyWith(color: AppColor.ink3),
+        ),
+        const SizedBox(height: 10),
+        ConditionReport(
+          condition: conditionFor('inconclusive'),
+          depth: ReportDepth.brief,
+          confidence: verdict.confidence,
+          rawLabel: verdict.prediction?.label,
+          heldBack: verdict.reasons,
+        ),
+        const SizedBox(height: Insets.lg),
+        Row(
+          children: <Widget>[
+            const Icon(AppIcons.info, size: 16, color: AppColor.ink3),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                l.notSavedRetake,
+                style: AppFont.bodySm.copyWith(color: AppColor.ink2),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Insets.md),
+        ElevatedButton.icon(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(AppIcons.scan, size: 20),
+          label: Text(l.retake),
         ),
       ],
     );

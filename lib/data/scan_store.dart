@@ -53,10 +53,17 @@ class ScanStore extends ChangeNotifier {
     await _persist();
   }
 
-  Future<void> remove(int id) async {
-    final List<ScanRecord> gone =
-        _items.where((ScanRecord e) => e.id == id).toList(growable: false);
-    _items = _items.where((ScanRecord e) => e.id != id).toList(growable: false);
+  Future<void> remove(int id) => removeMany(<int>{id});
+
+  /// Deletes several scans with one save, and their kept photos with them.
+  Future<void> removeMany(Set<int> ids) async {
+    if (ids.isEmpty) return;
+    final List<ScanRecord> gone = _items
+        .where((ScanRecord e) => ids.contains(e.id))
+        .toList(growable: false);
+    _items = _items
+        .where((ScanRecord e) => !ids.contains(e.id))
+        .toList(growable: false);
     notifyListeners();
     await _persist();
     for (final ScanRecord r in gone) {

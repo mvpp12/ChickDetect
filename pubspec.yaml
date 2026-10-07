@@ -46,12 +46,12 @@ flutter:
     - assets/models/model.tflite
     - assets/models/labels.txt
     - assets/onboarding/
-    - assets/tips/
     # The logo, flattened from chickenlogo.svg. That file is two PNGs and a
     # luminance mask, which Flutter's SVG renderers do not draw reliably, so
     # it is shipped as images instead: the full logo and the icon on its own.
     - assets/images/logo_full.png
     - assets/images/logo_mark.png
+    - assets/images/logo_wordmark.png
 
   fonts:
     - family: Poppins

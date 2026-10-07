@@ -9,5 +9,7 @@ class ModelRunner {
   void run(Object input, Object output) =>
       throw UnsupportedError('The on-device model does not run in a browser.');
 
+  String get inputName => '';
+
   void close() {}
 }

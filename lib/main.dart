@@ -11,7 +11,7 @@ import 'data/scan_store.dart';
 import 'ml/classifier.dart';
 import 'ui/guide_intro_page.dart';
 import 'ui/shell.dart';
-import 'ui/splash_page.dart';
+import 'ui/welcome_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +44,10 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
 
   /// null while we are still finding out; true once the guide has been seen.
   bool? _guideSeen;
+
+  /// First launch only: the welcome screen comes before the guide. Not
+  /// stored — once the guide is finished it never shows again anyway.
+  bool _welcomeDone = false;
   bool _modelFailed = false;
 
   static const String _guideKey = 'photo_guide_seen';
@@ -57,8 +61,7 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
   /// The landing page stays at least this long, even when loading is instant
   /// — in a browser it is, and the logo used to flash past unseen. Loading
   /// that takes longer (the AI on an older phone) simply keeps it up longer.
-  /// Kept in step with the loading bar in [SplashPage], which fills over the
-  /// same time.
+  /// The landing page shows its loading bar for at least this long.
   static const Duration minSplash = Duration(milliseconds: 2500);
 
   Future<void> _boot() async {
@@ -132,7 +135,15 @@ class _ChickDetectAppState extends State<ChickDetectApp> {
             duration: const Duration(milliseconds: 450),
             switchInCurve: Curves.easeOut,
             child: switch (_guideSeen) {
-              null => const SplashPage(key: ValueKey<String>('splash')),
+              // Loading: the landing page with a loading bar, same on every
+              // launch. Keyed the same as the first-launch welcome so the
+              // button simply fades in on the screen already showing.
+              null => const WelcomePage(key: ValueKey<String>('landing')),
+              // First launch: welcome, then the guide, then the app.
+              false when !_welcomeDone => WelcomePage(
+                key: const ValueKey<String>('landing'),
+                onStart: () => setState(() => _welcomeDone = true),
+              ),
               false => GuideIntroPage(
                 key: const ValueKey<String>('guide'),
                 onDone: _markGuideSeen,

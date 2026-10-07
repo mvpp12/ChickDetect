@@ -1,0 +1,35 @@
+Test accuracy (5 classes): 96.56%
+Test accuracy (4 dropping classes): 95.54%
+Sick droppings predicted Healthy: 14
+
+healthy         338 /  362   93.37%
+coccidiosis     358 /  372   96.24%
+salmonella      387 /  393   98.47%
+newcastle        75 /   85   88.24%
+not_dropping    360 /  360  100.00%
+
+Confusion matrix (rows = true, cols = predicted):
+                health  coccid  salmon  newcas  not_dr
+healthy            338       5      13       4       2
+coccidiosis          8     358       2       4       0
+salmonella           2       2     387       2       0
+newcastle            4       1       5      75       0
+not_dropping         0       0       0       0     360
+
+Probe: D:\ChickDetect-Better version\assets\onboarding
+  detection.png: not_dropping
+  flock_health.png: not_dropping
+  results.png: not_dropping
+  step_analyze.png: not_dropping
+  step_result.png: not_dropping
+  step_scan.png: not_dropping
+
+Probe: D:\ChickDetect-Better version\assets\tips
+  camera_mistakes.png: not_dropping
+  clear_photos.png: not_dropping
+  lighting.png: not_dropping
+  what_to_photograph.png: not_dropping
+
+Probe: D:\ChickDetect-Better version\assets\images
+  logo_full.png: not_dropping
+  logo_mark.png: not_dropping

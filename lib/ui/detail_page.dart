@@ -583,7 +583,10 @@ class _AnalysisTab extends StatelessWidget {
     final Condition topCondition = conditionFor(top.isEmpty ? null : top);
     final String name = topCondition.name(lang);
 
-    final List<double> sorted = record.scores.values.toList()
+    final List<double> sorted = record.scores.entries
+        .where((MapEntry<String, double> e) => e.key != 'not_dropping')
+        .map((MapEntry<String, double> e) => e.value)
+        .toList()
       ..sort((double a, double b) => b.compareTo(a));
     final int leadPoints = sorted.length >= 2
         ? ((sorted[0] - sorted[1]) * 100).round()

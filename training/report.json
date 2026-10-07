@@ -1,0 +1,104 @@
+{
+  "labels": [
+    "healthy",
+    "coccidiosis",
+    "salmonella",
+    "newcastle",
+    "not_dropping"
+  ],
+  "input": "float32 RGB 224x224, values 0..255 (scaling is inside the model)",
+  "split": {
+    "train": 7323,
+    "val": 1572,
+    "test": 1572
+  },
+  "test_accuracy_all_5": 0.9656488549618321,
+  "test_accuracy_4_dropping_classes": 0.9554455445544554,
+  "sick_predicted_healthy": 14,
+  "per_class": {
+    "healthy": {
+      "correct": 338,
+      "total": 362,
+      "accuracy": 0.9337016574585635
+    },
+    "coccidiosis": {
+      "correct": 358,
+      "total": 372,
+      "accuracy": 0.9623655913978495
+    },
+    "salmonella": {
+      "correct": 387,
+      "total": 393,
+      "accuracy": 0.9847328244274809
+    },
+    "newcastle": {
+      "correct": 75,
+      "total": 85,
+      "accuracy": 0.8823529411764706
+    },
+    "not_dropping": {
+      "correct": 360,
+      "total": 360,
+      "accuracy": 1.0
+    }
+  },
+  "confusion_matrix_rows_true_cols_pred": [
+    [
+      338,
+      5,
+      13,
+      4,
+      2
+    ],
+    [
+      8,
+      358,
+      2,
+      4,
+      0
+    ],
+    [
+      2,
+      2,
+      387,
+      2,
+      0
+    ],
+    [
+      4,
+      1,
+      5,
+      75,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      360
+    ]
+  ],
+  "probes": {
+    "D:\\ChickDetect-Better version\\assets\\onboarding": {
+      "detection.png": "not_dropping",
+      "flock_health.png": "not_dropping",
+      "results.png": "not_dropping",
+      "step_analyze.png": "not_dropping",
+      "step_result.png": "not_dropping",
+      "step_scan.png": "not_dropping"
+    },
+    "D:\\ChickDetect-Better version\\assets\\tips": {
+      "camera_mistakes.png": "not_dropping",
+      "clear_photos.png": "not_dropping",
+      "lighting.png": "not_dropping",
+      "what_to_photograph.png": "not_dropping"
+    },
+    "D:\\ChickDetect-Better version\\assets\\images": {
+      "logo_full.png": "not_dropping",
+      "logo_mark.png": "not_dropping"
+    }
+  },
+  "seconds": 1400,
+  "tflite_bytes": 10209544
+}

@@ -78,13 +78,7 @@ class _Header extends StatelessWidget {
               const BrandMark(size: 34, radius: 10),
               const SizedBox(width: 10),
               Text(l.appName, style: AppFont.h3),
-              const SizedBox(width: 10),
-              const Flexible(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: OnDeviceBadge(),
-                ),
-              ),
+              const Spacer(),
               IconButton(
                 tooltip: l.openSettings,
                 icon: const Icon(AppIcons.settings),

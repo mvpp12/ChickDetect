@@ -1,4 +1,5 @@
-NewCastle
-Salmonella
-coccidiosis
 healthy
+coccidiosis
+salmonella
+newcastle
+not_dropping

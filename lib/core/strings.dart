@@ -30,7 +30,6 @@ class L {
 
   // ── identity ───────────────────────────────────────────────────────────
   String get appName => 'ChickDetect';
-  String get onDevice => _p('NASA TELEPONO LANG', 'STAYS ON YOUR PHONE');
   String get offlineReady => _p('Handa kahit offline', 'Ready offline');
 
   // ── navigation ─────────────────────────────────────────────────────────
@@ -242,9 +241,45 @@ class L {
 
   // ── records ────────────────────────────────────────────────────────────
   String get records => _p('Listahan ng mga Scan', 'Scan Records');
-  String get recordsSub => _p(
-    'Lahat ng scan mo, nasa telepono lang',
-    'All your scans, kept on this phone',
+  String get recordsSub => _p('Lahat ng scan mo', 'All your scans');
+  String get longPressHint => _p(
+    'Pindutin nang matagal ang isang scan para pumili at magbura.',
+    'Long-press a scan to select and delete.',
+  );
+  String selectedCount(int n) => _p('$n napili', '$n selected');
+  String get selectAll => _p('Piliin lahat', 'Select all');
+  String get selectNone => _p('Alisin lahat', 'Deselect all');
+  String deleteSelectedQ(int n) =>
+      _p('Burahin ang $n scan?', 'Delete $n ${n == 1 ? 'scan' : 'scans'}?');
+  String get deleteSelectedBody => _p(
+    'Mabubura nang tuluyan ang mga napiling scan at ang mga litrato nito.',
+    'The selected scans and their photos will be deleted for good.',
+  );
+  String deletedCount(int n) =>
+      _p('Nabura ang $n scan', '$n ${n == 1 ? 'scan' : 'scans'} deleted');
+
+  // ── welcome (first launch) ─────────────────────────────────────────────
+  String get welcomeHeadline => _p('I-scan ang dumi.', 'Scan the droppings.');
+  String get welcomeSubhead =>
+      _p('Makita agad ang sakit.', 'Spot sickness early.');
+  String get welcomeStart => _p('Simulan', 'Get started');
+  String get welcomeNote =>
+      _p('Hindi kailangan ng internet', 'No internet needed');
+  String get notDroppingTitle => _p(
+    'Hindi ito mukhang dumi ng manok',
+    'This does not look like a chicken dropping',
+  );
+  String get notDroppingBody => _p(
+    'Itutok ang camera sa isang sariwang dumi, mga 10 hanggang 15 cm ang layo, '
+        'para mapuno nito ang gitna ng litrato.',
+    'Point the camera at one fresh dropping, about 10 to 15 cm away, so it '
+        'fills the middle of the photo.',
+  );
+  String get notSavedRetake => _p(
+    'Hindi ito nai-save sa listahan. Kumuha ng mas malinaw na litrato para '
+        'sa resulta.',
+    'This was not saved to your records. Take a clearer photo to get a '
+        'result.',
   );
   String get flockHealth => _p('Lagay ng mga manok', 'Your chickens\' health');
   // Short enough for a three-way segmented control on a 360dp screen; the
@@ -344,14 +379,14 @@ class L {
   String get openGuide => _p('Buksan', 'Open');
   String get limitsTitle => _p('Ang hindi nito kaya', 'What it cannot do');
   String get limitsBody => _p(
-    'Apat na uri ng dumi ang natutunan ng ChickDetect. Kapag iba ang kinunan — '
-        'sahig, pakain, o ang manok mismo — pipili pa rin ito ng isa sa apat. Kaya '
-        'sinusuri muna ng app ang litrato, at mas mahigpit ito bago sabihing '
-        'malusog.',
-    'ChickDetect learned four kinds of dropping. If you photograph something '
-        'else — the floor, the feed, the chicken — it will still pick one of the '
-        'four. That is why the app checks the photo first, and is stricter before '
-        'it says healthy.',
+    'Apat na uri ng dumi ang natutunan ng ChickDetect, at natuto rin itong '
+        'makilala kung hindi dumi ang kinunan. Mas mahigpit pa rin ito bago '
+        'sabihing malusog. Hindi pa nito nasubukan ang lahat ng uri ng sahig at '
+        'pakain sa mga bukid dito, kaya bantayan pa rin ang mga manok.',
+    'ChickDetect learned four kinds of dropping, and it also learned to tell '
+        'when a photo is not a dropping. It is still stricter before it says '
+        'healthy. It has not yet seen every kind of bedding and feed used on '
+        'local farms, so keep watching your chickens too.',
   );
 
   // ── settings ───────────────────────────────────────────────────────────

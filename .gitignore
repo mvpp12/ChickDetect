@@ -54,3 +54,4 @@ app.*.map.json
 /android/local.properties
 /Chapter3_ChickDetect_Research.docx
 /android/build/
+/training/.keras/

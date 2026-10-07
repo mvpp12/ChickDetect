@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/strings.dart';
 import '../../core/tokens.dart';
 
 /// The app's mark: the ChickDetect chicken, on a white tile.
@@ -33,48 +32,4 @@ class BrandMark extends StatelessWidget {
       semanticLabel: 'ChickDetect',
     ),
   );
-}
-
-/// The one place the app states that nothing leaves the phone.
-///
-/// In the prototype this claim appeared in seven places — the status bar, the
-/// header, under the camera, on the records note, on a privacy card, in
-/// Settings and at the foot of every report. Saying it once, always visible,
-/// is both less noise and more credible.
-class OnDeviceBadge extends StatelessWidget {
-  const OnDeviceBadge({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final L l = L.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColor.mint,
-        borderRadius: BorderRadius.circular(Insets.rFull),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 5,
-            height: 5,
-            decoration: const BoxDecoration(
-              color: AppColor.green700,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              l.onDevice,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppFont.micro.copyWith(color: AppColor.green900),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

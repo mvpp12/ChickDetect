@@ -14,6 +14,10 @@ enum VerdictKind {
 
   /// Nothing abnormal, reported.
   healthy,
+
+  /// The model's best answer was "this is not a dropping". Needs a model
+  /// trained with the fifth class; the four-class model never produces it.
+  notDropping,
 }
 
 /// Why a reading was held back. Shown to the farmer, not just logged.
@@ -47,6 +51,9 @@ class Decision {
   /// picking between two classes rather than recognising one.
   static const double marginBar = 0.15;
 
+  /// The fifth class's label, as written in labels.txt.
+  static const String notDroppingLabel = 'not_dropping';
+
   static double barFor(String label) =>
       label == 'healthy' ? healthyBar : conditionBar;
 
@@ -76,6 +83,18 @@ class Decision {
         quality: quality,
         prediction: null,
         reasons: const <HeldBackReason>[HeldBackReason.lowConfidence],
+      );
+    }
+
+    // Checked before any bar: the model saying "this is not a dropping" is
+    // an answer in itself, and naming a disease for it would be the exact
+    // mistake the fifth class exists to prevent.
+    if (prediction.label == notDroppingLabel) {
+      return Verdict(
+        kind: VerdictKind.notDropping,
+        quality: quality,
+        prediction: prediction,
+        reasons: const <HeldBackReason>[],
       );
     }
 
@@ -137,6 +156,7 @@ class Verdict {
         return prediction?.label ?? 'inconclusive';
       case VerdictKind.inconclusive:
       case VerdictKind.photoRejected:
+      case VerdictKind.notDropping:
         return 'inconclusive';
     }
   }
@@ -150,6 +170,7 @@ class Verdict {
         return 'disease';
       case VerdictKind.inconclusive:
       case VerdictKind.photoRejected:
+      case VerdictKind.notDropping:
         return 'inconclusive';
     }
   }
