@@ -2,289 +2,440 @@
 <html lang="tl" data-lang="tl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ChickDetect</title>
 <meta name="description" content="I-scan ang dumi ng manok gamit ang telepono para makita agad ang posibleng sakit. Libreng i-download para sa Android.">
-<meta name="theme-color" content="#0A4A33">
+<meta name="theme-color" content="#062E20">
 <link rel="icon" type="image/png" sizes="32x32" href="img/icon-32.png">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta property="og:title" content="ChickDetect">
 <meta property="og:description" content="I-scan ang dumi. Makita agad ang sakit.">
-<meta property="og:image" content="img/hero.jpg">
+<meta property="og:image" content="https://chickdetect-website.vercel.app/img/hero.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
+    --deep: #062E20;
     --green-900: #0A4A33;
-    --green-700: #12714D;
     --mint: #CDF0DC;
-    --mint-soft: #E6F8EE;
-    --bg: #F6F8FA;
-    --surface: #FFFFFF;
-    --line: #E2E8E5;
+    --mint-2: #8FDDB3;
+    --white-70: rgba(255, 255, 255, .72);
+    --white-50: rgba(255, 255, 255, .55);
     --ink: #0E1B14;
     --ink-2: #38463E;
-    --ink-3: #5B6A62;
-    --caution: #A85200;
-    --caution-soft: #FEF3E2;
-    --radius: 18px;
+    --line: #E2E8E5;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0;
+    margin: 0; background: var(--deep); color: #fff;
     font-family: Poppins, system-ui, -apple-system, "Segoe UI", sans-serif;
-    color: var(--ink);
-    background: var(--bg);
-    line-height: 1.55;
+    line-height: 1.5;
   }
-  img { max-width: 100%; display: block; }
-  a { color: var(--green-700); }
+  img { display: block; max-width: 100%; }
+  a { color: inherit; }
+  button { font: inherit; }
 
   /* One language at a time, switched by the toggle. */
   [data-lang="tl"] [lang="en"], [data-lang="en"] [lang="tl"] { display: none !important; }
 
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
-
-  /* ── header ─────────────────────────────────────────────────────────── */
-  header {
-    position: sticky; top: 0; z-index: 10;
-    background: rgba(246, 248, 250, .9);
-    backdrop-filter: saturate(1.4) blur(8px);
-    border-bottom: 1px solid var(--line);
+  /* ── top bar ───────────────────────────────────────────────────────── */
+  html { scroll-behavior: smooth; }
+  .bar {
+    position: absolute; inset: 0 0 auto 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px clamp(16px, 4vw, 56px);
   }
-  header .wrap { display: flex; align-items: center; gap: 12px; min-height: 64px; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .brand img.mark { width: 40px; height: 40px; }
-  .brand img.word { height: 26px; width: auto; }
-  .spacer { flex: 1; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand .tile {
+    width: 44px; height: 44px; border-radius: 12px; background: #fff;
+    display: grid; place-items: center; box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+  }
+  .brand .tile img { width: 34px; height: 34px; }
+  .brand b { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
   .lang {
-    display: inline-flex; padding: 3px; border-radius: 999px; background: #EFF1F4;
+    display: inline-flex; padding: 4px; border-radius: 999px;
+    background: rgba(6, 46, 32, .55); backdrop-filter: blur(10px);
   }
   .lang button {
-    font: inherit; font-size: 14px; font-weight: 500; border: 0; cursor: pointer;
-    padding: 8px 14px; border-radius: 999px; background: transparent; color: var(--ink-2);
-    min-height: 40px;
+    border: 0; cursor: pointer; background: transparent; color: var(--white-70);
+    font-size: 13px; font-weight: 600; padding: 8px 14px; min-height: 36px; border-radius: 999px;
   }
-  .lang button[aria-pressed="true"] {
-    background: var(--surface); color: var(--green-900); font-weight: 700;
-    box-shadow: 0 1px 3px rgba(14, 27, 20, .12);
-  }
+  .lang button[aria-pressed="true"] { background: #fff; color: var(--deep); }
 
-  /* ── hero ───────────────────────────────────────────────────────────── */
-  .hero { padding: 40px 0 24px; }
-  .hero .wrap {
-    display: grid; gap: 32px; align-items: center;
-    grid-template-columns: 1.05fr .95fr;
+  /* ── hero: text on deep green, photo on the right ──────────────────── */
+  .hero {
+    position: relative; min-height: 100vh; min-height: 100svh;
+    display: grid; grid-template-columns: 1fr 1fr; overflow: hidden;
   }
+  .copy {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px clamp(16px, 4vw, 56px) 64px;
+    background:
+      radial-gradient(120% 80% at 0% 100%, rgba(18, 113, 77, .35), transparent 60%),
+      var(--deep);
+  }
+  .copy-inner { max-width: 560px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--mint-2); margin: 0 0 18px;
+  }
+  .eyebrow svg { width: 18px; height: 18px; }
   h1 {
-    font-size: clamp(36px, 6vw, 56px); line-height: 1.08; margin: 0 0 6px;
-    color: var(--green-900); letter-spacing: -1px;
+    margin: 0 0 18px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.02;
+    font-size: clamp(40px, 5vw, 72px);
   }
-  .sub {
-    font-size: clamp(22px, 3.2vw, 30px); font-weight: 500; color: var(--ink-2);
-    margin: 0 0 18px; line-height: 1.25;
-  }
-  .lead { font-size: 17px; color: var(--ink-2); margin: 0 0 26px; max-width: 34em; }
-  .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 10px; justify-content: center;
-    font-weight: 700; font-size: 17px; text-decoration: none;
-    min-height: 56px; padding: 0 26px; border-radius: 14px;
-  }
-  .btn-primary { background: var(--green-900); color: #fff; }
-  .btn-primary:hover { background: #083A28; }
-  .btn-secondary {
-    background: var(--surface); color: var(--green-900); border: 1px solid var(--line);
-    font-weight: 500;
-  }
-  .btn svg { width: 22px; height: 22px; flex: none; }
-  .meta { font-size: 14px; color: var(--ink-3); margin-top: 12px; }
-  .hero-photo {
-    border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 5;
-    box-shadow: 0 24px 60px -24px rgba(10, 74, 51, .45);
-  }
-  .hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 70%; }
+  h1 .soft { display: block; color: var(--mint); font-weight: 500; letter-spacing: -1px;
+    font-size: .6em; margin-top: 10px; line-height: 1.15; }
+  .lead { margin: 0 0 22px; font-size: clamp(16px, 1.3vw, 18px); color: var(--white-70); max-width: 30em; }
 
-  /* ── sections ───────────────────────────────────────────────────────── */
-  section { padding: 40px 0; }
-  h2 { font-size: clamp(24px, 3.4vw, 32px); margin: 0 0 8px; color: var(--ink); letter-spacing: -.4px; }
-  .section-lead { color: var(--ink-2); margin: 0 0 26px; }
-  .features { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
-  .card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 22px;
+  .download {
+    display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+    min-height: 64px; padding: 0 40px; border-radius: 16px;
+    background: var(--mint); color: var(--deep); text-decoration: none;
+    font-size: 18px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    box-shadow: 0 18px 40px -16px rgba(143, 221, 179, .65);
+    transition: transform .15s ease, background .15s ease;
   }
-  .card .ic {
-    width: 46px; height: 46px; border-radius: 12px; background: var(--mint-soft);
-    display: grid; place-items: center; margin-bottom: 14px; color: var(--green-900);
+  .download:hover { background: #fff; transform: translateY(-2px); }
+  .download svg { width: 24px; height: 24px; }
+  .meta { margin: 16px 0 0; font-size: 14px; color: var(--white-50); }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 26px; }
+  .links a, .links button {
+    background: none; border: 0; padding: 6px 0; cursor: pointer; color: #fff;
+    font-size: 15px; font-weight: 500; text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, .35); text-underline-offset: 5px;
   }
-  .card .ic svg { width: 24px; height: 24px; }
-  .card h3 { margin: 0 0 6px; font-size: 18px; }
-  .card p { margin: 0; color: var(--ink-2); font-size: 15px; }
+  .links a:hover, .links button:hover { text-decoration-color: var(--mint-2); }
 
-  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-  .steps li {
-    counter-increment: s; position: relative; padding: 18px 20px 18px 66px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  /* Computer visitors: scan to open this page on the phone. */
+  .quote {
+    margin: 0 0 32px; padding: 2px 0 2px 18px; border-left: 3px solid var(--mint-2);
+    font-size: clamp(15px, 1.2vw, 17px); font-style: italic; color: var(--mint); max-width: 30em;
   }
-  .steps li::before {
-    content: counter(s); position: absolute; left: 18px; top: 16px;
-    width: 32px; height: 32px; border-radius: 50%; background: var(--ink-2); color: #fff;
-    display: grid; place-items: center; font-weight: 700; font-size: 15px;
+  .act { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px 26px; }
+  .qr {
+    display: flex; align-items: center; gap: 14px;
+    padding: 8px 14px 8px 8px; border-radius: 16px; max-width: 250px;
+    background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .12);
   }
-  .steps strong { display: block; margin-bottom: 2px; }
-  .steps span.d { color: var(--ink-2); font-size: 15px; }
-  .callout {
-    margin-top: 16px; padding: 16px 18px; border-radius: 14px;
-    background: var(--caution-soft); border: 1px solid rgba(168, 82, 0, .28); color: var(--ink);
-    font-size: 15px;
-  }
-  .callout b { color: var(--caution); }
+  .qr .code { background: #fff; padding: 6px; border-radius: 10px; flex: none; }
+  .qr .code img { width: 52px; height: 52px; }
+  .qr p { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--white-70); }
+  .qr strong { display: block; color: #fff; font-size: 13.5px; }
 
-  .note {
-    background: var(--mint-soft); border: 1px solid #A8DFC2; border-radius: var(--radius);
-    padding: 22px; color: var(--ink);
+  .photo { position: relative; }
+  .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
+  /* Blends the photo's left edge into the green. */
+  .photo::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 38%; z-index: 1;
+    background: linear-gradient(90deg, var(--deep), rgba(6, 46, 32, 0));
   }
-  .note h3 { margin: 0 0 6px; font-size: 18px; color: var(--green-900); }
-  .note p { margin: 0; color: var(--ink-2); }
 
+  /* ── nav links (computer only) ─────────────────────────────────────── */
+  .nav {
+    display: flex; gap: 6px; margin-left: auto; margin-right: 12px; padding: 4px;
+    border-radius: 999px; background: rgba(6, 46, 32, .55); backdrop-filter: blur(10px);
+  }
+  .nav a { padding: 8px 14px; border-radius: 999px; color: rgba(255, 255, 255, .88); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .nav a:hover { color: #fff; }
+
+  /* ── sections ──────────────────────────────────────────────────────── */
+  .sec { padding: clamp(64px, 9vw, 112px) clamp(16px, 4vw, 56px); }
+  .sec.light { background: #F4F7F5; color: var(--ink); }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  .kicker {
+    margin: 0 0 10px; font-size: 13px; font-weight: 600; letter-spacing: 2.5px;
+    text-transform: uppercase; color: #12714D;
+  }
+  .sec:not(.light) .kicker { color: var(--mint-2); }
+  h2 {
+    margin: 0 0 14px; font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
+    letter-spacing: -1px; line-height: 1.1;
+  }
+  .intro { margin: 0 0 44px; font-size: 17px; max-width: 36em; color: var(--ink-2); }
+  .sec:not(.light) .intro { color: var(--white-70); }
+  .grid3 { display: grid; gap: 20px; grid-template-columns: repeat(3, 1fr); }
+
+  .prob { padding: 26px; border-radius: 20px; background: #fff; border: 1px solid var(--line); }
+  .prob .n { font-size: 15px; font-weight: 800; color: #12714D; margin-bottom: 14px; }
+  .prob h3, .step h3, .feat h3 { margin: 0 0 6px; font-size: 19px; letter-spacing: -.2px; }
+  .prob p, .feat p { margin: 0; font-size: 15px; color: var(--ink-2); }
+
+  .step {
+    border-radius: 20px; overflow: hidden;
+    background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1);
+  }
+  .step img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
+  .step > div { padding: 20px 22px 24px; }
+  .step .n { font-size: 13px; font-weight: 600; letter-spacing: 2px; color: var(--mint-2); margin-bottom: 6px; }
+  .step p { margin: 0; font-size: 15px; color: var(--white-70); }
+
+  .feats { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+  .feat {
+    display: flex; gap: 16px; padding: 22px; border-radius: 20px;
+    background: #fff; border: 1px solid var(--line);
+  }
+  .feat .ic {
+    flex: none; width: 48px; height: 48px; border-radius: 14px;
+    background: #E6F8EE; color: var(--green-900); display: grid; place-items: center;
+  }
+  .feat .ic svg { width: 24px; height: 24px; }
+
+  .end { text-align: center; }
+  .end h2 { margin: 0 auto 26px; }
+
+  /* ── footer ────────────────────────────────────────────────────────── */
   footer {
-    border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--ink-3); font-size: 14px;
+    background: #04200F; color: var(--white-50); font-size: 13px;
+    padding: 36px clamp(16px, 4vw, 56px) 40px; text-align: center;
   }
+  footer .note { max-width: 720px; margin: 0 auto 14px; color: var(--white-70); font-size: 14px; }
   footer p { margin: 0 0 8px; }
+  footer a { color: var(--white-70); }
 
-  @media (max-width: 820px) {
-    .hero .wrap { grid-template-columns: 1fr; }
-    .hero-photo { aspect-ratio: 4 / 3; order: -1; border-radius: 22px; }
-    .features { grid-template-columns: 1fr; }
-    .brand img.word { height: 22px; }
+  /* ── install steps dialog ──────────────────────────────────────────── */
+  dialog {
+    width: min(520px, calc(100% - 32px)); max-height: calc(100% - 32px);
+    border: 0; border-radius: 22px; padding: 0; color: var(--ink); background: #fff;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
   }
-  @media (max-width: 420px) {
-    .btn { width: 100%; }
+  dialog::backdrop { background: rgba(2, 20, 12, .7); backdrop-filter: blur(3px); }
+  .dlg { padding: 26px 24px 24px; }
+  .dlg-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .dlg h2 { margin: 0; font-size: 22px; letter-spacing: -.3px; }
+  .close {
+    width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
+    background: #EFF1F4; color: var(--ink); font-size: 22px; line-height: 1;
+  }
+  .steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding: 0 0 16px 48px; }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 0;
+    width: 32px; height: 32px; border-radius: 50%; background: var(--green-900); color: #fff;
+    display: grid; place-items: center; font-weight: 600; font-size: 14px;
+  }
+  .steps strong { display: block; }
+  .steps span.d { color: var(--ink-2); font-size: 14px; }
+  .warn {
+    margin-top: 4px; padding: 14px 16px; border-radius: 14px; font-size: 14px;
+    background: #FEF3E2; border: 1px solid rgba(168, 82, 0, .28);
+  }
+  .warn b { color: #A85200; }
+
+  /* ── phone: the photo fills the screen, text sits over it ──────────── */
+  @media (max-width: 900px) {
+    .nav { display: none; }
+    .grid3, .feats { grid-template-columns: 1fr; }
+    .hero { grid-template-columns: 1fr; }
+    .photo { position: absolute; inset: 0; }
+    .photo img { object-position: center 40%; }
+    .photo::before {
+      inset: 0; width: auto;
+      background: linear-gradient(180deg,
+        rgba(6, 46, 32, .55) 0%, rgba(6, 46, 32, 0) 22%,
+        rgba(6, 46, 32, .15) 40%, rgba(6, 46, 32, .88) 64%, var(--deep) 82%);
+    }
+    .copy { background: transparent; justify-content: flex-end; padding-top: 50vh; padding-bottom: 36px; }
+    .download { width: 100%; }
+    .qr { display: none; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap">
-    <a class="brand" href="./" aria-label="ChickDetect">
-      <img class="mark" src="img/logo-mark.png" alt="" width="40" height="40">
-      <img class="word" src="img/logo-wordmark.png" alt="ChickDetect" height="26">
-    </a>
-    <div class="spacer"></div>
-    <div class="lang" role="group" aria-label="Language">
-      <button type="button" data-set="tl" aria-pressed="true">Tagalog</button>
-      <button type="button" data-set="en" aria-pressed="false">English</button>
-    </div>
+<header class="bar">
+  <a class="brand" href="./" aria-label="ChickDetect">
+    <span class="tile"><img src="img/logo-mark.png" alt="" width="34" height="34"></span>
+    <b>ChickDetect</b>
+  </a>
+  <nav class="nav" aria-label="Sections">
+    <a href="#problema"><span lang="tl">Problema</span><span lang="en">Problem</span></a>
+    <a href="#solusyon"><span lang="tl">Solusyon</span><span lang="en">Solution</span></a>
+    <a href="#features">Features</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-set="tl" aria-pressed="true">TL</button>
+    <button type="button" data-set="en" aria-pressed="false">EN</button>
   </div>
 </header>
 
-<main>
-  <section class="hero">
-    <div class="wrap">
+<main class="hero">
+  <div class="copy">
+    <div class="copy-inner">
+      <p class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.87 3.23a11.43 11.43 0 0 0-9.82 0L5.22 5.92a.38.38 0 1 0-.66.38L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+        <span lang="tl">Libre para sa Android</span><span lang="en">Free for Android</span>
+      </p>
+      <h1>
+        <span lang="tl">I-scan ang dumi.</span><span lang="en">Scan the droppings.</span>
+        <span class="soft"><span lang="tl">Makita agad ang sakit.</span><span lang="en">Spot sickness early.</span></span>
+      </h1>
+      <p class="lead">
+        <span lang="tl">Ang ChickDetect ay app na sumusuri sa litrato ng dumi ng manok para malaman kung malusog ito o may palatandaan ng sakit — kahit walang internet.</span>
+        <span lang="en">ChickDetect is an app that checks a photo of a chicken dropping to tell whether it looks healthy or shows signs of disease — even offline.</span>
+      </p>
+      <blockquote class="quote">
+        <span lang="tl">“Mas madaling pigilan ang sakit kapag maaga itong nakita.”</span>
+        <span lang="en">“Disease is easier to stop when it is caught early.”</span>
+      </blockquote>
+
+      <div class="act">
       <div>
-        <h1><span lang="tl">I-scan ang dumi.</span><span lang="en">Scan the droppings.</span></h1>
-        <p class="sub"><span lang="tl">Makita agad ang sakit.</span><span lang="en">Spot sickness early.</span></p>
-        <p class="lead">
-          <span lang="tl">Kunan ng litrato ang sariwang dumi ng manok at sasabihin ng ChickDetect kung mukhang malusog ito o may palatandaan ng Coccidiosis, Salmonella o Newcastle Disease — kasama ang dapat gawin at kailan tatawag sa beterinaryo.</span>
-          <span lang="en">Take a photo of a fresh chicken dropping and ChickDetect tells you whether it looks healthy or shows signs of Coccidiosis, Salmonella or Newcastle Disease — with what to do and when to call a vet.</span>
-        </p>
-        <div class="cta">
-          <a class="btn btn-primary" href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-            <span lang="tl">I-download para sa Android</span><span lang="en">Download for Android</span>
-          </a>
-          <a class="btn btn-secondary" href="https://mvpp12.github.io/ChickDetect/">
-            <span lang="tl">Subukan ang demo</span><span lang="en">Try the demo</span>
-          </a>
-        </div>
-        <p class="meta">
-          <span lang="tl">Bersyon 2.0.0 · 52.5 MB · Android 7.0 pataas</span>
-          <span lang="en">Version 2.0.0 · 52.5 MB · Android 7.0 or newer</span>
-        </p>
+      <a class="download" href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        <span lang="tl">I-download</span><span lang="en">Download</span>
+      </a>
+      <p class="meta">
+        <span lang="tl">Bersyon 2.0.0 · 52.5 MB · Android 7.0 pataas</span>
+        <span lang="en">Version 2.0.0 · 52.5 MB · Android 7.0 or newer</span>
+      </p>
       </div>
-      <div class="hero-photo">
-        <img src="img/hero.jpg" alt="" width="941" height="1672">
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <h2><span lang="tl">Ano ang kaya nito</span><span lang="en">What it does</span></h2>
-      <p class="section-lead"><span lang="tl">Ginawa para sa mga nag-aalaga ng manok sa bahay at maliliit na farm.</span><span lang="en">Made for backyard and small-farm chicken keepers.</span></p>
-      <div class="features">
-        <div class="card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/></svg></div>
-          <h3><span lang="tl">I-scan ang dumi</span><span lang="en">Scan a dropping</span></h3>
-          <p><span lang="tl">Itapat ang camera sa isang sariwang dumi, 10–15 cm ang layo. Sinusuri muna ng app kung malinaw ang litrato.</span><span lang="en">Point the camera at one fresh dropping, 10–15 cm away. The app checks the photo is clear first.</span></p>
-        </div>
-        <div class="card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></div>
-          <h3><span lang="tl">Resulta at payo</span><span lang="en">Result and advice</span></h3>
-          <p><span lang="tl">Malinaw na resulta, ang dapat gawin ngayong araw at ngayong linggo, at mga numero ng beterinaryo na isang pindot lang.</span><span lang="en">A clear result, what to do today and this week, and your vet's number one tap away.</span></p>
-        </div>
-        <div class="card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 2l20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 12.9a10 10 0 0 1 5.2-2.8"/><path d="M19 12.9a10 10 0 0 0-2.3-1.6"/><path d="M12 20h.01"/></svg></div>
-          <h3><span lang="tl">Gumagana kahit walang internet</span><span lang="en">Works without internet</span></h3>
-          <p><span lang="tl">Sa telepono mismo ginagawa ang pagsusuri. Walang ina-upload na litrato at walang account.</span><span lang="en">The check runs on the phone itself. No photos are uploaded and there is no account.</span></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="install">
-    <div class="wrap">
-      <h2><span lang="tl">Paano i-install</span><span lang="en">How to install</span></h2>
-      <p class="section-lead"><span lang="tl">Hindi pa ito nasa Play Store, kaya may ilang dagdag na hakbang.</span><span lang="en">It is not on the Play Store yet, so there are a few extra steps.</span></p>
-      <ol class="steps">
-        <li><strong><span lang="tl">I-download ang app</span><span lang="en">Download the app</span></strong>
-          <span class="d"><span lang="tl">Pindutin ang "I-download para sa Android" sa itaas gamit ang iyong Android phone.</span><span lang="en">Tap "Download for Android" above, on your Android phone.</span></span></li>
-        <li><strong><span lang="tl">Buksan ang na-download na file</span><span lang="en">Open the downloaded file</span></strong>
-          <span class="d"><span lang="tl">Pindutin ang ChickDetect.apk sa notification o sa folder na Downloads.</span><span lang="en">Tap ChickDetect.apk in the notification or the Downloads folder.</span></span></li>
-        <li><strong><span lang="tl">Payagan ang pag-install</span><span lang="en">Allow the install</span></strong>
-          <span class="d"><span lang="tl">Kapag tinanong, pindutin ang Settings at buksan ang "Payagan mula sa source na ito" (Install unknown apps), saka bumalik.</span><span lang="en">If asked, tap Settings and turn on "Allow from this source" (Install unknown apps), then go back.</span></span></li>
-        <li><strong><span lang="tl">I-install at buksan</span><span lang="en">Install and open</span></strong>
-          <span class="d"><span lang="tl">Pindutin ang Install, tapos Open. Payagan ang camera kapag tinanong.</span><span lang="en">Tap Install, then Open. Allow the camera when asked.</span></span></li>
-      </ol>
-      <div class="callout">
-        <b><span lang="tl">Kung may babala ang Google Play Protect:</span><span lang="en">If Google Play Protect shows a warning:</span></b>
-        <span lang="tl">lumalabas ito sa mga app na hindi galing sa Play Store. Pindutin ang "Higit pang detalye" at "I-install pa rin".</span>
-        <span lang="en">it appears for apps that are not from the Play Store. Tap "More details", then "Install anyway".</span>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="note">
-        <h3><span lang="tl">Paalala</span><span lang="en">Please note</span></h3>
+      <div class="qr">
+        <div class="code"><img src="img/qr.svg" alt="QR code" width="52" height="52"></div>
         <p>
-          <span lang="tl">Paunang pagsusuri ang ChickDetect para matulungan kang makita agad ang posibleng sakit. Hindi nito pinapalitan ang pagsusuri ng beterinaryo — ipakumpirma sa kanila, lalo na kung nakakahawang sakit. Sa Pilipinas, dapat i-report sa munisipyo ang hinihinalang Newcastle Disease.</span>
-          <span lang="en">ChickDetect is a preliminary check that helps you spot possible disease early. It does not replace a veterinarian's findings — have a vet confirm it, especially for a disease that spreads. In the Philippines, suspected Newcastle Disease must be reported to your local government.</span>
+          <strong><span lang="tl">Nasa computer ka?</span><span lang="en">On a computer?</span></strong>
+          <span lang="tl">I-scan gamit ang phone para i-download doon.</span>
+          <span lang="en">Scan with your phone to download there.</span>
         </p>
       </div>
+      </div>
+
+      <div class="links">
+        <button type="button" id="open-install"><span lang="tl">Paano i-install?</span><span lang="en">How to install?</span></button>
+        <a href="https://mvpp12.github.io/ChickDetect/"><span lang="tl">Subukan sa browser</span><span lang="en">Try it in the browser</span></a>
+      </div>
+
     </div>
-  </section>
+  </div>
+  <div class="photo">
+    <img src="img/hero.jpg" alt="" width="941" height="1672">
+  </div>
 </main>
 
-<footer>
+<section class="sec light" id="problema">
   <div class="wrap">
-    <p>ChickDetect · <span lang="tl">Bersyon</span><span lang="en">Version</span> 2.0.0</p>
-    <p>
-      <span lang="tl">Sinanay gamit ang</span><span lang="en">Trained using the</span>
-      <a href="https://zenodo.org/records/4628934" rel="noopener">Machine Learning Dataset for Poultry Diseases Diagnostics</a>
-      (Machuve et al., CC BY 4.0).
-    </p>
+    <p class="kicker"><span lang="tl">Ang problema</span><span lang="en">The problem</span></p>
+    <h2><span lang="tl">Huli na kapag napansin ang sakit.</span><span lang="en">Sickness is noticed too late.</span></h2>
+    <p class="intro"><span lang="tl">Sa maliliit na farm at bakuran, madalas nang kumalat ang sakit bago pa ito makita.</span><span lang="en">On small farms and backyards, disease often spreads before anyone sees it.</span></p>
+    <div class="grid3">
+      <div class="prob"><div class="n">01</div>
+        <h3><span lang="tl">Mahirap makita agad</span><span lang="en">Hard to spot early</span></h3>
+        <p><span lang="tl">Mukhang normal pa ang manok sa unang mga araw ng sakit.</span><span lang="en">Chickens still look normal in the first days of illness.</span></p></div>
+      <div class="prob"><div class="n">02</div>
+        <h3><span lang="tl">Malayo ang beterinaryo</span><span lang="en">Vets are far away</span></h3>
+        <p><span lang="tl">Mahal at matagal ang pagpapatingin, lalo na sa probinsya.</span><span lang="en">A check-up is costly and slow, especially in the provinces.</span></p></div>
+      <div class="prob"><div class="n">03</div>
+        <h3><span lang="tl">Mabilis kumalat</span><span lang="en">It spreads fast</span></h3>
+        <p><span lang="tl">Isang may sakit na manok, puwedeng mahawa ang buong kulungan.</span><span lang="en">One sick bird can infect the whole coop.</span></p></div>
+    </div>
   </div>
+</section>
+
+<section class="sec" id="solusyon">
+  <div class="wrap">
+    <p class="kicker"><span lang="tl">Ang solusyon</span><span lang="en">The solution</span></p>
+    <h2><span lang="tl">Isang litrato lang ng dumi.</span><span lang="en">Just one photo of a dropping.</span></h2>
+    <p class="intro"><span lang="tl">Ipinapakita ng dumi ang kalusugan ng manok. Sinusuri ito ng ChickDetect sa telepono mo mismo.</span><span lang="en">Droppings show a chicken&#39;s health. ChickDetect checks them right on your phone.</span></p>
+    <div class="grid3">
+      <div class="step"><img src="img/step-scan.jpg" alt="" width="720" height="402"><div>
+        <div class="n">1</div>
+        <h3><span lang="tl">Kunan ng litrato</span><span lang="en">Take a photo</span></h3>
+        <p><span lang="tl">Itapat ang camera sa sariwang dumi.</span><span lang="en">Point the camera at a fresh dropping.</span></p></div></div>
+      <div class="step"><img src="img/step-analyze.jpg" alt="" width="720" height="402"><div>
+        <div class="n">2</div>
+        <h3><span lang="tl">Susuriin ng app</span><span lang="en">The app checks it</span></h3>
+        <p><span lang="tl">Sa telepono mismo — walang internet.</span><span lang="en">On the phone itself — no internet.</span></p></div></div>
+      <div class="step"><img src="img/step-result.jpg" alt="" width="720" height="402"><div>
+        <div class="n">3</div>
+        <h3><span lang="tl">Alamin ang gagawin</span><span lang="en">Know what to do</span></h3>
+        <p><span lang="tl">Resulta, payo, at kailan tatawag sa beterinaryo.</span><span lang="en">The result, advice, and when to call a vet.</span></p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="features">
+  <div class="wrap">
+    <p class="kicker"><span lang="tl">Features</span><span lang="en">Features</span></p>
+    <h2><span lang="tl">Ano ang kaya ng ChickDetect</span><span lang="en">What ChickDetect can do</span></h2>
+    <p class="intro"><span lang="tl">Simple, mabilis, at para sa bawat nag-aalaga ng manok.</span><span lang="en">Simple, fast, and made for every chicken keeper.</span></p>
+    <div class="feats">
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/></svg></div><div>
+        <h3><span lang="tl">4 na resulta</span><span lang="en">4 results</span></h3>
+        <p><span lang="tl">Malusog, Coccidiosis, Salmonella o Newcastle Disease.</span><span lang="en">Healthy, Coccidiosis, Salmonella or Newcastle Disease.</span></p></div></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 5.2-2.8M19 12.9a10 10 0 0 0-2.3-1.6M12 20h.01"/></svg></div><div>
+        <h3><span lang="tl">Walang internet</span><span lang="en">Works offline</span></h3>
+        <p><span lang="tl">Gumagana kahit nasa bukid na walang signal.</span><span lang="en">Works even on a farm with no signal.</span></p></div></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></div><div>
+        <h3><span lang="tl">Payo sa pag-aalaga</span><span lang="en">Care advice</span></h3>
+        <p><span lang="tl">Mga hakbang na gagawin ngayong araw at ngayong linggo.</span><span lang="en">Steps to take today and this week.</span></p></div></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div><div>
+        <h3><span lang="tl">Tawag sa beterinaryo</span><span lang="en">Call a vet</span></h3>
+        <p><span lang="tl">I-save ang numero at tumawag sa isang pindot.</span><span lang="en">Save numbers and call in one tap.</span></p></div></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg></div><div>
+        <h3><span lang="tl">Listahan ng scan</span><span lang="en">Scan history</span></h3>
+        <p><span lang="tl">Bantayan ang kalusugan ng kulungan sa paglipas ng panahon.</span><span lang="en">Track your coop&#39;s health over time.</span></p></div></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></div><div>
+        <h3><span lang="tl">Tagalog at English</span><span lang="en">Tagalog and English</span></h3>
+        <p><span lang="tl">Simpleng salita na madaling maintindihan.</span><span lang="en">Plain words that are easy to follow.</span></p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec end">
+  <div class="wrap">
+    <h2><span lang="tl">Subukan ang ChickDetect ngayon.</span><span lang="en">Try ChickDetect today.</span></h2>
+    <a class="download" href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      <span lang="tl">I-download</span><span lang="en">Download</span>
+    </a>
+    <p class="meta"><span lang="tl">Libre · Android 7.0 pataas</span><span lang="en">Free · Android 7.0 or newer</span></p>
+  </div>
+</section>
+
+<footer>
+  <p class="note">
+    <span lang="tl">Paunang pagsusuri lamang ang ChickDetect. Hindi nito pinapalitan ang beterinaryo — ipakumpirma sa kanila ang resulta.</span>
+    <span lang="en">ChickDetect is a preliminary check only. It does not replace a veterinarian — have them confirm the result.</span>
+  </p>
+  <p>
+    <span lang="tl">Sinanay gamit ang</span><span lang="en">Trained using the</span>
+    <a href="https://zenodo.org/records/4628934" rel="noopener">Poultry Diseases Diagnostics dataset</a>
+    (Machuve et al., CC BY 4.0) · <a href="https://github.com/mvpp12/ChickDetect" rel="noopener">GitHub</a>
+  </p>
+  <p>© 2026 ChickDetect</p>
 </footer>
 
+<dialog id="install" aria-labelledby="install-title">
+  <div class="dlg">
+    <div class="dlg-head">
+      <h2 id="install-title"><span lang="tl">Paano i-install</span><span lang="en">How to install</span></h2>
+      <button class="close" type="button" aria-label="Close">×</button>
+    </div>
+    <ol class="steps">
+      <li><strong><span lang="tl">I-download</span><span lang="en">Download</span></strong>
+        <span class="d"><span lang="tl">Pindutin ang I-download gamit ang Android phone mo. Kung may babala ang browser, piliin ang "I-download pa rin".</span><span lang="en">Tap Download on your Android phone. If the browser warns you, choose "Download anyway".</span></span></li>
+      <li><strong><span lang="tl">Buksan ang file</span><span lang="en">Open the file</span></strong>
+        <span class="d"><span lang="tl">Pindutin ang ChickDetect.apk sa notification o sa Downloads.</span><span lang="en">Tap ChickDetect.apk in the notification or in Downloads.</span></span></li>
+      <li><strong><span lang="tl">Payagan ang pag-install</span><span lang="en">Allow the install</span></strong>
+        <span class="d"><span lang="tl">Kapag tinanong, buksan ang "Payagan mula sa source na ito", saka bumalik.</span><span lang="en">If asked, turn on "Allow from this source", then go back.</span></span></li>
+      <li><strong><span lang="tl">I-install at buksan</span><span lang="en">Install and open</span></strong>
+        <span class="d"><span lang="tl">Pindutin ang Install, tapos Open. Payagan ang camera.</span><span lang="en">Tap Install, then Open. Allow the camera.</span></span></li>
+    </ol>
+    <div class="warn">
+      <b><span lang="tl">Babala ng Play Protect?</span><span lang="en">Play Protect warning?</span></b>
+      <span lang="tl">Normal ito sa mga app na wala pa sa Play Store. Pindutin ang "Higit pang detalye" → "I-install pa rin".</span>
+      <span lang="en">This is normal for apps not on the Play Store yet. Tap "More details" → "Install anyway".</span>
+    </div>
+  </div>
+</dialog>
+
 <script>
-  // Language toggle; remembered on this device only.
   (function () {
+    // Language toggle; remembered on this device only.
     var root = document.documentElement;
     var buttons = document.querySelectorAll('.lang button');
     function set(lang) {
@@ -301,6 +452,12 @@
     buttons.forEach(function (b) {
       b.addEventListener('click', function () { set(b.getAttribute('data-set')); });
     });
+
+    // Install steps.
+    var dlg = document.getElementById('install');
+    document.getElementById('open-install').addEventListener('click', function () { dlg.showModal(); });
+    dlg.querySelector('.close').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
   })();
 </script>
 </body>
