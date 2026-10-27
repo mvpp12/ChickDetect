@@ -52,7 +52,7 @@ os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '2')
 
 import tensorflow as tf  # noqa: E402
 from PIL import Image  # noqa: E402
-from sklearn.metrics import confusion_matrix  # noqa: E402
+from sklearn.metrics import confusion_matrix, f1_score  # noqa: E402
 from sklearn.model_selection import StratifiedGroupKFold  # noqa: E402
 
 SEED = 42
@@ -265,6 +265,9 @@ def main():
     # The four disease classes alone, comparable with the earlier study.
     m4 = y_te != LABELS.index('not_dropping')
     acc4 = float((pred_te[m4] == y_te[m4]).mean())
+    macro_f1 = float(f1_score(y_te, pred_te, average='macro'))
+    macro_f1_4 = float(f1_score(y_te[m4], pred_te[m4], average='macro',
+                                labels=[0, 1, 2, 3]))
     sick_as_healthy = int(((y_te != 0) & (y_te != 4) & (pred_te == 0)).sum())
 
     probes = {}
@@ -282,6 +285,8 @@ def main():
         'split': {'train': len(p_tr), 'val': len(p_va), 'test': len(p_te)},
         'test_accuracy_all_5': acc,
         'test_accuracy_4_dropping_classes': acc4,
+        'macro_f1_all_5': macro_f1,
+        'macro_f1_4_dropping_classes': macro_f1_4,
         'sick_predicted_healthy': sick_as_healthy,
         'per_class': per_class(y_te, pred_te),
         'confusion_matrix_rows_true_cols_pred': cm.tolist(),
@@ -293,6 +298,8 @@ def main():
                                           encoding='utf-8')
     lines = [f'Test accuracy (5 classes): {acc * 100:.2f}%',
              f'Test accuracy (4 dropping classes): {acc4 * 100:.2f}%',
+             f'Macro F1 (5 classes): {macro_f1 * 100:.2f}%',
+             f'Macro F1 (4 dropping classes): {macro_f1_4 * 100:.2f}%',
              f'Sick droppings predicted Healthy: {sick_as_healthy}', '']
     for name, r in report['per_class'].items():
         lines.append(f"{name:14s} {r['correct']:4d} / {r['total']:4d}  "
