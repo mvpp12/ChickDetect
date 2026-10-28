@@ -500,10 +500,6 @@ class ScoreBars extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Text(
-                        '${(e.value * 100).toStringAsFixed(1)}%',
-                        style: AppFont.labelSm.copyWith(color: ink),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 6),

@@ -614,16 +614,9 @@ class _AnalysisTab extends StatelessWidget {
                   style: AppFont.micro.copyWith(color: AppColor.ink3),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Expanded(child: Text(name, style: AppFont.h2)),
-                    Text(
-                      '${(record.confidence * 100).round()}%',
-                      style: AppFont.figure.copyWith(fontSize: 30),
-                    ),
-                  ],
-                ),
+                // No percentage: the bar and its word say how sure the
+                // model was without inviting "78 % sick" readings.
+                Text(name, style: AppFont.h2),
                 const SizedBox(height: Insets.md),
                 CertaintyMeter(
                   value: record.confidence,
@@ -668,8 +661,6 @@ class _AnalysisTab extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(l.lead(leadPoints), style: AppFont.label),
-                          const SizedBox(height: 2),
                           Text(
                             clearLead ? l.leadClear : l.leadNarrow,
                             style: AppFont.bodySm.copyWith(
