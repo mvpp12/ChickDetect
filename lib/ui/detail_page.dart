@@ -103,11 +103,6 @@ class DetailPage extends StatelessWidget {
         ),
         body: Builder(
           builder: (BuildContext inner) {
-            void jump(_Tab to) {
-              final int i = tabs.indexOf(to);
-              if (i >= 0) DefaultTabController.of(inner).animateTo(i);
-            }
-
             return Column(
               children: <Widget>[
                 _Summary(record: r, condition: condition),
@@ -162,8 +157,6 @@ class DetailPage extends StatelessWidget {
                               record: r,
                               condition: condition,
                               onEdit: () => _editLabels(context, r),
-                              jumpTo: jump,
-                              hasTab: tabs.contains,
                             ),
                             _Tab.analysis => _AnalysisTab(record: r),
                             _Tab.care => _CareTab(condition: condition),
@@ -314,19 +307,21 @@ class _TabListState extends State<_TabList> with AutomaticKeepAliveClientMixin {
 // Overview
 // ─────────────────────────────────────────────────────────────────────────
 
+/// The verdict and the facts of this scan.
+///
+/// It does not repeat the verdict as a status row, nor link to the other tabs:
+/// the strip above already names the result, and the tab bar is the way to
+/// the reasons, the advice and the vet. Saying each twice only pushed the
+/// part that matters further down.
 class _OverviewTab extends StatelessWidget {
   final ScanRecord record;
   final Condition condition;
   final VoidCallback onEdit;
-  final ValueChanged<_Tab> jumpTo;
-  final bool Function(_Tab) hasTab;
 
   const _OverviewTab({
     required this.record,
     required this.condition,
     required this.onEdit,
-    required this.jumpTo,
-    required this.hasTab,
   });
 
   @override
@@ -386,21 +381,6 @@ class _OverviewTab extends StatelessWidget {
                         style: AppFont.label,
                       ),
               ),
-              const Divider(),
-              _InfoRow(
-                icon: statusIcon(record.status),
-                label: l.statusLabel,
-                child: Pill(
-                  label: switch (record.status) {
-                    'healthy' => l.healthy,
-                    'disease' => l.diseased,
-                    _ => l.inconclusive,
-                  },
-                  ink: statusInk(record.status),
-                  fill: severityFill(condition),
-                  icon: statusIcon(record.status),
-                ),
-              ),
             ],
           ),
         ),
@@ -444,26 +424,6 @@ class _OverviewTab extends StatelessWidget {
             fill: AppColor.cautionSoft,
           ),
         ],
-
-        // What → why → what to do → when to call, one tap each.
-        const SizedBox(height: Insets.section),
-        Text(l.whatNext, style: AppFont.h3),
-        const SizedBox(height: 10),
-        _JumpRow(
-          icon: AppIcons.scores,
-          label: l.quickWhy,
-          onTap: () => jumpTo(_Tab.analysis),
-        ),
-        _JumpRow(
-          icon: AppIcons.tabCare,
-          label: l.quickDo,
-          onTap: () => jumpTo(_Tab.care),
-        ),
-        _JumpRow(
-          icon: AppIcons.tabVet,
-          label: l.quickVet,
-          onTap: () => jumpTo(_Tab.vet),
-        ),
       ],
     );
   }
@@ -507,55 +467,6 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _JumpRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _JumpRow({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Material(
-      color: AppColor.surface,
-      borderRadius: BorderRadius.circular(Insets.rMd),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Insets.rMd),
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 56),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Insets.rMd),
-            border: Border.all(color: AppColor.line),
-          ),
-          child: Row(
-            children: <Widget>[
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColor.mintSoft,
-                  borderRadius: BorderRadius.circular(Insets.rSm),
-                ),
-                child: Icon(icon, size: 18, color: AppColor.green900),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(label, style: AppFont.label)),
-              const Icon(AppIcons.chevron, size: 18, color: AppColor.ink3),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // AI Analysis
 // ─────────────────────────────────────────────────────────────────────────
@@ -582,11 +493,12 @@ class _AnalysisTab extends StatelessWidget {
     final Condition topCondition = conditionFor(top.isEmpty ? null : top);
     final String name = topCondition.name(lang);
 
-    final List<double> sorted = record.scores.entries
-        .where((MapEntry<String, double> e) => e.key != 'not_dropping')
-        .map((MapEntry<String, double> e) => e.value)
-        .toList()
-      ..sort((double a, double b) => b.compareTo(a));
+    final List<double> sorted =
+        record.scores.entries
+            .where((MapEntry<String, double> e) => e.key != 'not_dropping')
+            .map((MapEntry<String, double> e) => e.value)
+            .toList()
+          ..sort((double a, double b) => b.compareTo(a));
     final int leadPoints = sorted.length >= 2
         ? ((sorted[0] - sorted[1]) * 100).round()
         : 100;

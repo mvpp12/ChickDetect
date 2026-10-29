@@ -47,10 +47,16 @@ class _RecordsPageState extends State<RecordsPage> {
   String _filter = 'all';
   _Window _window = _Window.month;
 
-  /// Scans picked for deletion. Long-pressing a row starts picking; while
-  /// anything is picked, a tap toggles a row instead of opening it.
+  /// Scans picked for deletion. The Select button or a long-press starts
+  /// picking; while picking, a tap toggles a row instead of opening it.
   final Set<int> _selected = <int>{};
-  bool get _selecting => _selected.isNotEmpty;
+  bool _picking = false;
+  bool get _selecting => _picking || _selected.isNotEmpty;
+
+  void _stopSelecting() => setState(() {
+    _picking = false;
+    _selected.clear();
+  });
 
   void _toggle(ScanRecord r) => setState(() {
     if (!_selected.remove(r.id)) _selected.add(r.id);
@@ -73,10 +79,18 @@ class _RecordsPageState extends State<RecordsPage> {
     );
     if (!yes || !mounted) return;
     final Set<int> ids = <int>{..._selected};
-    setState(_selected.clear);
+    _stopSelecting();
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final List<ScanRecord> gone = await store.detach(ids);
     showUndoDelete(messenger, store, gone, l.deletedCount(ids.length), l.undo);
+  }
+
+  /// Swipe-to-delete: no confirmation dialog, because Undo is right there.
+  Future<void> _deleteOne(ScanStore store, ScanRecord r) async {
+    final L l = L.of(context);
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final List<ScanRecord> gone = await store.detach(<int>{r.id});
+    showUndoDelete(messenger, store, gone, l.scanDeleted, l.undo);
   }
 
   @override
@@ -151,7 +165,7 @@ class _RecordsPageState extends State<RecordsPage> {
     return PopScope(
       canPop: !_selecting,
       onPopInvokedWithResult: (bool didPop, Object? _) {
-        if (!didPop && _selecting) setState(_selected.clear);
+        if (!didPop && _selecting) _stopSelecting();
       },
       child: Column(
         children: <Widget>[
@@ -163,7 +177,7 @@ class _RecordsPageState extends State<RecordsPage> {
                 : _SelectionBar(
                     count: _selected.length,
                     allPicked: allShownPicked,
-                    onCancel: () => setState(_selected.clear),
+                    onCancel: _stopSelecting,
                     onSelectAll: () => setState(() {
                       if (allShownPicked) {
                         _selected.clear();
@@ -171,7 +185,9 @@ class _RecordsPageState extends State<RecordsPage> {
                         _selected.addAll(shown.map((ScanRecord r) => r.id));
                       }
                     }),
-                    onDelete: () => _deleteSelected(store, shown),
+                    onDelete: _selected.isEmpty
+                        ? null
+                        : () => _deleteSelected(store, shown),
                   ),
           ),
           Expanded(
@@ -193,9 +209,7 @@ class _RecordsPageState extends State<RecordsPage> {
                   lastScan: all.first.at,
                   filter: _filter,
                   onFilter: _toggleFilter,
-                  onOpen: _open,
                   onScan: widget.onScan,
-                  dayLabel: (DateTime d) => _dayLabel(l, d),
                 ),
                 const SizedBox(height: Insets.md),
                 TextField(
@@ -237,23 +251,19 @@ class _RecordsPageState extends State<RecordsPage> {
                     ),
                   ),
                 ],
-                // How to delete, said once, where the list starts.
-                if (shown.isNotEmpty && !_selecting) ...<Widget>[
-                  const SizedBox(height: 12),
-                  Row(
-                    children: <Widget>[
-                      const Icon(AppIcons.info, size: 15, color: AppColor.ink3),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          l.longPressHint,
-                          style: AppFont.labelSm.copyWith(color: AppColor.ink3),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                const SizedBox(height: Insets.lg),
+                // A button instead of a line explaining a hidden long-press.
+                // Single scans can also be swiped away, with Undo.
+                if (shown.isNotEmpty && !_selecting)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => setState(() => _picking = true),
+                      icon: const Icon(AppIcons.check, size: 18),
+                      label: Text(l.select),
+                    ),
+                  )
+                else
+                  const SizedBox(height: Insets.lg),
                 if (shown.isEmpty)
                   AppCard(
                     padding: const EdgeInsets.symmetric(
@@ -297,12 +307,20 @@ class _RecordsPageState extends State<RecordsPage> {
         out.add(_DayHeading(label: _dayLabel(l, d), first: out.isEmpty));
       }
       out.add(
-        _Row(
-          record: r,
-          number: store.numberOf(r),
-          selected: _selected.contains(r.id),
-          onTap: () => _selecting ? _toggle(r) : _open(r),
-          onLongPress: () => _selecting ? _toggle(r) : _startSelecting(r),
+        Dismissible(
+          key: ValueKey<int>(r.id),
+          direction: _selecting
+              ? DismissDirection.none
+              : DismissDirection.endToStart,
+          background: const _SwipeDelete(),
+          onDismissed: (_) => _deleteOne(store, r),
+          child: _Row(
+            record: r,
+            number: store.numberOf(r),
+            selected: _selected.contains(r.id),
+            onTap: () => _selecting ? _toggle(r) : _open(r),
+            onLongPress: () => _selecting ? _toggle(r) : _startSelecting(r),
+          ),
         ),
       );
     }
@@ -334,13 +352,16 @@ class _RecordsPageState extends State<RecordsPage> {
 /// The answer to "do I need to do something?", then the evidence.
 ///
 ///   1. One sentence, coloured by what it says.
-///   2. The latest sick result, one tap from its "what to do" steps.
-///   3. Healthy vs sick — counts, not percentages; with a handful of scans a
+///   2. Healthy vs sick — counts, not percentages; with a handful of scans a
 ///      percentage claims more precision than there is. Each count is also
 ///      the filter for the list below.
-///   4. Retakes on their own line. They are about the photo, not the bird, so
-///      they are kept out of the health bar.
-///   5. The trend, only once there is enough to compare.
+///   3. Retakes on their own line. They are about the photo, not the bird, so
+///      they are kept apart from the health counts.
+///   4. The trend, only once there is enough to compare.
+///
+/// It used to also show the latest sick scan and a red-and-green bar. Both
+/// repeated the sentence and the counts, and the latest scan is the first row
+/// of the list anyway.
 class _HealthCard extends StatelessWidget {
   final _Window window;
   final int? days;
@@ -350,9 +371,7 @@ class _HealthCard extends StatelessWidget {
   final DateTime lastScan;
   final String filter;
   final ValueChanged<String> onFilter;
-  final ValueChanged<ScanRecord> onOpen;
   final VoidCallback onScan;
-  final String Function(DateTime) dayLabel;
 
   const _HealthCard({
     required this.window,
@@ -363,9 +382,7 @@ class _HealthCard extends StatelessWidget {
     required this.lastScan,
     required this.filter,
     required this.onFilter,
-    required this.onOpen,
     required this.onScan,
-    required this.dayLabel,
   });
 
   /// A week without a scan is long enough for a problem to take hold.
@@ -380,10 +397,9 @@ class _HealthCard extends StatelessWidget {
     final int retakes = inWindow
         .where((ScanRecord r) => r.status == 'inconclusive')
         .length;
-    final List<ScanRecord> sickList = inWindow
+    final int sick = inWindow
         .where((ScanRecord r) => r.status == 'disease')
-        .toList(growable: false);
-    final int sick = sickList.length;
+        .length;
     final int sinceLast = DateTime.now().difference(lastScan).inDays;
 
     // ── 1. the headline ──────────────────────────────────────────────────
@@ -410,7 +426,7 @@ class _HealthCard extends StatelessWidget {
           )
         : (l.noScansIn(days), AppIcons.scan, AppColor.ink2, AppColor.fill);
 
-    // ── 5. the trend, only when it has something to say ───────────────────
+    // ── 4. the trend, only when it has something to say ───────────────────
     final double? now = ScanStore.healthyShare(inWindow);
     final double? before = ScanStore.healthyShare(previous);
     (String, IconData, Color)? trend;
@@ -456,50 +472,15 @@ class _HealthCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     headline,
-                    style: AppFont.h3.copyWith(color: ink, fontSize: 16),
+                    style: AppFont.h3.copyWith(color: ink, fontSize: 17),
                   ),
                 ),
               ],
             ),
           ),
 
-          // 2. the latest sick result, straight to its steps
-          if (sickList.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 8),
-            _LatestSick(
-              record: sickList.first,
-              when: dayLabel(sickList.first.at),
-              onTap: () => onOpen(sickList.first),
-            ),
-          ],
-
-          // 3. healthy vs sick, as counts that double as the filter
+          // 2. healthy vs sick, as counts that double as the filter
           if (healthy + sick > 0) ...<Widget>[
-            const SizedBox(height: Insets.md),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(Insets.rFull),
-              child: SizedBox(
-                height: 8,
-                // Stretch, or the childless ColoredBoxes collapse to zero
-                // height and the bar never shows.
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    if (healthy > 0)
-                      Expanded(
-                        flex: healthy,
-                        child: const ColoredBox(color: AppColor.green700),
-                      ),
-                    if (healthy > 0 && sick > 0) const SizedBox(width: 2),
-                    if (sick > 0)
-                      Expanded(
-                        flex: sick,
-                        child: const ColoredBox(color: AppColor.danger),
-                      ),
-                  ],
-                ),
-              ),
-            ),
             const SizedBox(height: 10),
             Row(
               children: <Widget>[
@@ -526,7 +507,7 @@ class _HealthCard extends StatelessWidget {
             ),
           ],
 
-          // 4. retakes, kept apart from health
+          // 3. retakes, kept apart from health
           if (retakes > 0 && healthy + sick > 0) ...<Widget>[
             const SizedBox(height: 8),
             _LinkRow(
@@ -538,7 +519,7 @@ class _HealthCard extends StatelessWidget {
             ),
           ],
 
-          // 5. trend
+          // 4. trend
           if (trend != null) ...<Widget>[
             const SizedBox(height: 8),
             Row(
@@ -567,73 +548,6 @@ class _HealthCard extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-/// The most recent sick result, as a row that opens its report.
-class _LatestSick extends StatelessWidget {
-  final ScanRecord record;
-  final String when;
-  final VoidCallback onTap;
-
-  const _LatestSick({
-    required this.record,
-    required this.when,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final L l = L.of(context);
-    final String where = record.coop.trim();
-    return Material(
-      color: AppColor.surface,
-      borderRadius: BorderRadius.circular(Insets.rMd),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Insets.rMd),
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: Insets.tap + 8),
-          padding: const EdgeInsets.fromLTRB(12, 8, 6, 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Insets.rMd),
-            border: Border.all(color: AppColor.line),
-          ),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      l.latest.toUpperCase(),
-                      style: AppFont.micro.copyWith(color: AppColor.ink3),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      conditionFor(record.conditionKey).name(l.lang),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppFont.label.copyWith(
-                        color: AppColor.danger,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      where.isEmpty ? when : '$where  ·  $when',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppFont.bodySm.copyWith(color: AppColor.ink2),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(AppIcons.chevron, size: 18, color: AppColor.ink3),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -879,37 +793,20 @@ class _Row extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      // The coop name gives way first; the number and the time
-                      // always stay visible.
-                      Row(
-                        children: <Widget>[
-                          if (coop.isNotEmpty) ...<Widget>[
-                            Flexible(
-                              child: Text(
-                                coop,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppFont.bodySm.copyWith(
-                                  color: AppColor.ink,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '  ·  ',
-                              style: AppFont.bodySm.copyWith(
-                                color: AppColor.ink3,
-                              ),
-                            ),
-                          ],
-                          Text(
-                            '$tag  ·  '
-                            '${DateFormat('h:mm a').format(record.at)}',
-                            maxLines: 1,
-                            style: AppFont.bodySm.copyWith(
-                              color: AppColor.ink3,
-                            ),
-                          ),
-                        ],
+                      // The coop gets a line of its own and may wrap to a
+                      // second: sharing a line with the number and time cut
+                      // "Main layer house" to "Main layer hou…".
+                      if (coop.isNotEmpty)
+                        Text(
+                          coop,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppFont.bodySm.copyWith(color: AppColor.ink),
+                        ),
+                      Text(
+                        '$tag  ·  ${DateFormat('h:mm a').format(record.at)}',
+                        maxLines: 1,
+                        style: AppFont.bodySm.copyWith(color: AppColor.ink3),
                       ),
                       if (note.isNotEmpty)
                         Text(
@@ -1021,7 +918,9 @@ class _SelectionBar extends StatelessWidget {
   final bool allPicked;
   final VoidCallback onCancel;
   final VoidCallback onSelectAll;
-  final VoidCallback onDelete;
+
+  /// Null until something is picked.
+  final VoidCallback? onDelete;
 
   const _SelectionBar({
     required this.count,
@@ -1060,11 +959,42 @@ class _SelectionBar extends StatelessWidget {
           ),
           IconButton(
             tooltip: l.delete,
-            icon: const Icon(AppIcons.delete, color: AppColor.danger),
+            icon: const Icon(AppIcons.delete),
+            color: AppColor.danger,
             onPressed: onDelete,
           ),
         ],
       ),
     );
   }
+}
+
+/// What shows behind a row as it is swiped away.
+class _SwipeDelete extends StatelessWidget {
+  const _SwipeDelete();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    // Matches the gap under each row, so the red stops where the card does.
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: Insets.lg),
+      decoration: BoxDecoration(
+        color: AppColor.danger,
+        borderRadius: BorderRadius.circular(Insets.rMd),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            L.of(context).delete,
+            style: AppFont.label.copyWith(color: AppColor.onDark),
+          ),
+          const SizedBox(width: 8),
+          const Icon(AppIcons.delete, color: AppColor.onDark, size: 20),
+        ],
+      ),
+    ),
+  );
 }

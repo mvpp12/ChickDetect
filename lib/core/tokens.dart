@@ -99,7 +99,9 @@ class Insets {
   static const double navBar = 72;
 }
 
-/// One scale, used everywhere. Poppins ships with the app so nothing falls
+/// One scale, used everywhere. Sized for reading outdoors at arm's length on
+/// a cheap screen: body text is 16, and nothing that carries words is under 11.
+/// Poppins ships with the app so nothing falls
 /// back to the platform font.
 ///
 /// Only four weights ship — 300, 400, 500 and 700 — so the scale uses only
@@ -116,60 +118,60 @@ class AppFont {
 
   static const TextStyle display = TextStyle(
     fontFamily: family,
-    fontSize: 27,
+    fontSize: 28,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.6,
     height: 1.2,
   );
   static const TextStyle h1 = TextStyle(
     fontFamily: family,
-    fontSize: 22,
+    fontSize: 23,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.4,
     height: 1.25,
   );
   static const TextStyle h2 = TextStyle(
     fontFamily: family,
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
     height: 1.3,
   );
   static const TextStyle h3 = TextStyle(
     fontFamily: family,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.1,
     height: 1.35,
   );
   static const TextStyle body = TextStyle(
     fontFamily: family,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.55,
   );
   static const TextStyle bodySm = TextStyle(
     fontFamily: family,
-    fontSize: 12.5,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.5,
   );
   static const TextStyle label = TextStyle(
     fontFamily: family,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.3,
   );
   static const TextStyle labelSm = TextStyle(
     fontFamily: family,
-    fontSize: 11,
+    fontSize: 12.5,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.3,
     height: 1.3,
   );
   static const TextStyle micro = TextStyle(
     fontFamily: family,
-    fontSize: 9.5,
+    fontSize: 11,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.7,
     height: 1.3,

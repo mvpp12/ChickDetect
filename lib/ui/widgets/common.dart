@@ -380,7 +380,7 @@ class CertaintyMeter extends StatelessWidget {
             final double w = c.maxWidth;
             final double markX = (w * bar).clamp(0.0, w);
             return SizedBox(
-              height: 32,
+              height: 14,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: <Widget>[
@@ -416,26 +416,17 @@ class CertaintyMeter extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Wide enough for "KAILANGAN" on one line; at 60px the
-                  // Tagalog word broke into "KAILANGA / N".
-                  Positioned(
-                    left: markX - 50,
-                    top: 17,
-                    child: SizedBox(
-                      width: 100,
-                      child: Text(
-                        l.needed.toUpperCase(),
-                        maxLines: 1,
-                        softWrap: false,
-                        textAlign: TextAlign.center,
-                        style: AppFont.micro.copyWith(color: AppColor.ink3),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             );
           },
+        ),
+        // The tick used to carry a one-word "NEEDED" label, which told a
+        // farmer nothing. One plain sentence says what the line is for.
+        const SizedBox(height: 6),
+        Text(
+          l.certaintyLine,
+          style: AppFont.labelSm.copyWith(color: AppColor.ink3),
         ),
       ],
     );

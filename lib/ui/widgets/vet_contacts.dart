@@ -139,7 +139,7 @@ class _CallButton extends StatelessWidget {
                         style: AppFont.label.copyWith(
                           color: ink,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14.5,
+                          fontSize: 15.5,
                         ),
                       ),
                       const SizedBox(height: 2),

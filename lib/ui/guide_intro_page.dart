@@ -385,7 +385,7 @@ class _StepText extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             step.body(l),
-            style: AppFont.body.copyWith(color: AppColor.ink2, fontSize: 15),
+            style: AppFont.body.copyWith(color: AppColor.ink2),
           ),
           if (good != null && bad != null) ...<Widget>[
             const SizedBox(height: Insets.lg),
@@ -449,7 +449,7 @@ class _Compare extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 (good ? l.doThis : l.avoidThis).toUpperCase(),
-                style: AppFont.micro.copyWith(color: ink, fontSize: 11),
+                style: AppFont.micro.copyWith(color: ink, fontSize: 12),
               ),
             ],
           ),

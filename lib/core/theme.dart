@@ -82,7 +82,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Insets.rMd),
           ),
-          textStyle: AppFont.label.copyWith(fontSize: 14.5),
+          textStyle: AppFont.label.copyWith(fontSize: 15.5),
         ),
       ),
 
@@ -95,7 +95,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Insets.rMd),
           ),
-          textStyle: AppFont.label.copyWith(fontSize: 14.5),
+          textStyle: AppFont.label.copyWith(fontSize: 15.5),
         ),
       ),
 

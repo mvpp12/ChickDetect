@@ -205,7 +205,10 @@ class L {
   // ── result ─────────────────────────────────────────────────────────────
   String get scanResult => _p('RESULTA NG SCAN', 'SCAN RESULT');
   String get certainty => _p('Gaano kasigurado', 'How sure');
-  String get needed => _p('Kailangan', 'Needed');
+  String get certaintyLine => _p(
+    'Maaasahan ang resulta kapag lumampas ang kulay sa guhit.',
+    'The result can be trusted once the colour passes the line.',
+  );
   String get strongMatch => _p('Sigurado', 'Very sure');
   String get likelyMatch => _p('Medyo sigurado', 'Fairly sure');
   String get belowBar => _p('Hindi pa sigurado', 'Not sure yet');
@@ -246,10 +249,7 @@ class L {
   // ── records ────────────────────────────────────────────────────────────
   String get records => _p('Listahan ng mga Scan', 'Scan Records');
   String get recordsSub => _p('Lahat ng scan mo', 'All your scans');
-  String get longPressHint => _p(
-    'Pindutin nang matagal ang isang scan para pumili at magbura.',
-    'Long-press a scan to select and delete.',
-  );
+  String get select => _p('Pumili', 'Select');
   String selectedCount(int n) => _p('$n napili', '$n selected');
   String get selectAll => _p('Piliin lahat', 'Select all');
   String get selectNone => _p('Alisin lahat', 'Deselect all');
@@ -296,7 +296,8 @@ class L {
   String get diseased => _p('May sakit', 'Sick');
   String get all => _p('Lahat', 'All');
   String get searchHint =>
-      _p('Hanapin ang kulungan o numero', 'Search coop or number');
+      // Short enough to fit the field at the 16px body size.
+      _p('Hanapin: kulungan o numero', 'Search coop or number');
   String get noMatches => _p('Walang nahanap', 'Nothing found');
   String get noRecordsYet => _p('Wala pang scan', 'No scans yet');
   String get noRecordsBody => _p(
@@ -385,7 +386,6 @@ class L {
     'Last scan was $days days ago',
   );
   String get scanNow => _p('Mag-scan na', 'Scan now');
-  String get latest => _p('Pinakabago', 'Latest');
   String get tapToFilter => _p('Pindutin para makita', 'Tap to see them');
   String get showing => _p('Ipinapakita', 'Showing');
   String get showAll => _p('Ipakita lahat', 'Show all');
@@ -456,14 +456,8 @@ class L {
   String get tabVet => _p('Beterinaryo', 'Vet');
 
   // overview
-  String get statusLabel => _p('Lagay', 'Status');
   String get scannedOn => _p('Na-scan', 'Scanned');
   String get chickenAndCoop => _p('Manok at kulungan', 'Chicken and coop');
-  String get whatNext => _p('Susunod na titingnan', 'What to check next');
-  String get quickWhy => _p('Bakit ito ang resulta?', 'Why this result?');
-  String get quickDo => _p('Ano ang dapat gawin', 'What to do');
-  String get quickVet =>
-      _p('Kailan tatawag sa beterinaryo', 'When to call a vet');
 
   // AI analysis
   String get aiScore => _p('Iskor', 'Score');
