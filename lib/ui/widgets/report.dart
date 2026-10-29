@@ -465,7 +465,8 @@ class ScoreBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Lang lang = L.of(context).lang;
+    final L l = L.of(context);
+    final Lang lang = l.lang;
     // The four dropping results only; a "not a dropping" score is not a
     // result to compare a disease against.
     final List<MapEntry<String, double>> rows = scores.entries
@@ -482,37 +483,49 @@ class ScoreBars extends StatelessWidget {
             final bool isTop =
                 top != null && e.key.toLowerCase() == top!.toLowerCase();
             final Color ink = isTop ? AppColor.green700 : AppColor.ink3;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          conditionFor(e.key).name(lang),
-                          style: AppFont.bodySm.copyWith(
-                            color: isTop ? AppColor.ink : AppColor.ink2,
-                            fontWeight: isTop
-                                ? FontWeight.w500
-                                : FontWeight.w400,
+            // The bars carry no numbers, so TalkBack gets the comparison in
+            // words instead — otherwise it would read four names and nothing.
+            final double best = rows.first.value;
+            final String standing = e.value >= best
+                ? l.scoreHighest
+                : best - e.value < Decision.marginBar
+                ? l.scoreClose
+                : l.scoreLower;
+            return Semantics(
+              label: '${conditionFor(e.key).name(lang)}, $standing',
+              excludeSemantics: true,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            conditionFor(e.key).name(lang),
+                            style: AppFont.bodySm.copyWith(
+                              color: isTop ? AppColor.ink : AppColor.ink2,
+                              fontWeight: isTop
+                                  ? FontWeight.w500
+                                  : FontWeight.w400,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(Insets.rFull),
-                    child: LinearProgressIndicator(
-                      value: e.value.clamp(0.0, 1.0),
-                      minHeight: 6,
-                      backgroundColor: AppColor.fill,
-                      valueColor: AlwaysStoppedAnimation<Color>(ink),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(Insets.rFull),
+                      child: LinearProgressIndicator(
+                        value: e.value.clamp(0.0, 1.0),
+                        minHeight: 6,
+                        backgroundColor: AppColor.fill,
+                        valueColor: AlwaysStoppedAnimation<Color>(ink),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           })

@@ -13,6 +13,7 @@ import '../data/scan_record.dart';
 import '../data/scan_store.dart';
 import 'detail_page.dart';
 import 'widgets/common.dart';
+import 'widgets/undo_delete.dart';
 
 enum _Window { week, month, all }
 
@@ -73,8 +74,9 @@ class _RecordsPageState extends State<RecordsPage> {
     if (!yes || !mounted) return;
     final Set<int> ids = <int>{..._selected};
     setState(_selected.clear);
-    await store.removeMany(ids);
-    if (mounted) showToast(context, l.deletedCount(ids.length));
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final List<ScanRecord> gone = await store.detach(ids);
+    showUndoDelete(messenger, store, gone, l.deletedCount(ids.length), l.undo);
   }
 
   @override
@@ -832,6 +834,7 @@ class _Row extends StatelessWidget {
                                 // long log of full-resolution photos is what makes
                                 // a cheap phone stutter on scroll.
                                 cacheWidth: 168,
+                                excludeFromSemantics: true,
                                 errorBuilder: (_, _, _) =>
                                     const _Thumb(icon: AppIcons.imageBroken),
                               ),

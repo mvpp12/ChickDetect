@@ -36,7 +36,11 @@ class GuidePage extends StatelessWidget {
         // ── the three rules ────────────────────────────────────────────
         SectionHead(icon: AppIcons.scan, label: l.photoRules),
         ...kPhotoRules.map((PhotoRule r) => _RuleCard(rule: r)),
-        const SizedBox(height: 4),
+        Text(
+          l.rulePhotoCredit,
+          style: AppFont.labelSm.copyWith(color: AppColor.ink3),
+        ),
+        const SizedBox(height: Insets.md),
         OutlinedButton.icon(
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const GuideIntroPage()),
@@ -84,44 +88,106 @@ class _RuleCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: AppCard(
         padding: const EdgeInsets.all(14),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: AppColor.mintSoft,
-                borderRadius: BorderRadius.circular(Insets.rSm),
-              ),
-              child: Icon(rule.icon, size: 19, color: AppColor.green900),
+            // The pair comes first: it is what a farmer compares against the
+            // dropping in front of them. The sentence below is for whoever
+            // wants the reason.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: _Example(
+                    asset: rule.goodAsset,
+                    label: rule.doLabel(l),
+                    good: true,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _Example(
+                    asset: rule.badAsset,
+                    label: rule.dontLabel(l),
+                    good: false,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(rule.title(l), style: AppFont.h3),
-                  const SizedBox(height: 5),
-                  Text(
-                    rule.body(l),
-                    style: AppFont.bodySm.copyWith(color: AppColor.ink2),
-                  ),
-                  const SizedBox(height: 11),
-                  Wrap(
-                    spacing: 7,
-                    runSpacing: 7,
-                    children: <Widget>[
-                      DoDont(label: rule.doLabel(l), good: true),
-                      DoDont(label: rule.dontLabel(l), good: false),
-                    ],
-                  ),
-                ],
-              ),
+            const SizedBox(height: 14),
+            Text(rule.title(l), style: AppFont.h3),
+            const SizedBox(height: 5),
+            Text(
+              rule.body(l),
+              style: AppFont.bodySm.copyWith(color: AppColor.ink2),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// One example photo, framed and badged so right and wrong read apart by
+/// colour, by the tick or cross, and by the label — any one is enough.
+class _Example extends StatelessWidget {
+  final String asset;
+  final String label;
+  final bool good;
+
+  const _Example({
+    required this.asset,
+    required this.label,
+    required this.good,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color ink = good ? AppColor.green900 : AppColor.danger;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        AspectRatio(
+          aspectRatio: 1,
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Insets.rMd),
+              border: Border.all(color: ink, width: 2),
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                // The label beside it says the same thing to a screen reader.
+                Image.asset(
+                  asset,
+                  fit: BoxFit.cover,
+                  excludeFromSemantics: true,
+                ),
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: ink,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      good ? AppIcons.check : AppIcons.cross,
+                      size: 15,
+                      color: AppColor.onDark,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        DoDont(label: label, good: good),
+      ],
     );
   }
 }

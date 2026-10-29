@@ -57,7 +57,13 @@ class ScanStore extends ChangeNotifier {
 
   /// Deletes several scans with one save, and their kept photos with them.
   Future<void> removeMany(Set<int> ids) async {
-    if (ids.isEmpty) return;
+    await dropPhotosOf(await detach(ids));
+  }
+
+  /// Takes scans out of the list but leaves their photos on disk, so an
+  /// Undo can still put them back. Pair with [restore] or [dropPhotosOf].
+  Future<List<ScanRecord>> detach(Set<int> ids) async {
+    if (ids.isEmpty) return const <ScanRecord>[];
     final List<ScanRecord> gone = _items
         .where((ScanRecord e) => ids.contains(e.id))
         .toList(growable: false);
@@ -66,7 +72,21 @@ class ScanStore extends ChangeNotifier {
         .toList(growable: false);
     notifyListeners();
     await _persist();
-    for (final ScanRecord r in gone) {
+    return gone;
+  }
+
+  /// Puts detached scans back where they were in time.
+  Future<void> restore(List<ScanRecord> records) async {
+    if (records.isEmpty) return;
+    _items = <ScanRecord>[..._items, ...records]
+      ..sort((ScanRecord a, ScanRecord b) => b.at.compareTo(a.at));
+    notifyListeners();
+    await _persist();
+  }
+
+  /// Deletes the photos of scans that are gone for good.
+  Future<void> dropPhotosOf(List<ScanRecord> records) async {
+    for (final ScanRecord r in records) {
       await dropPhoto(r.imagePath);
     }
   }

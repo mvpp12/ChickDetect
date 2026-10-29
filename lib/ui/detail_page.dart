@@ -20,6 +20,7 @@ import 'widgets/common.dart';
 import 'widgets/labels_form.dart';
 import 'widgets/report.dart';
 import 'widgets/vet_contacts.dart';
+import 'widgets/undo_delete.dart';
 
 enum _Tab { overview, analysis, care, vet }
 
@@ -214,12 +215,10 @@ class DetailPage extends StatelessWidget {
     );
     if (!yes || !context.mounted) return;
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    await store.remove(r.id);
+    final List<ScanRecord> gone = await store.detach(<int>{r.id});
     if (!context.mounted) return;
     Navigator.of(context).pop();
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l.scanDeleted)));
+    showUndoDelete(messenger, store, gone, l.scanDeleted, l.undo);
   }
 }
 
@@ -1042,6 +1041,7 @@ class _FocusMapState extends State<_FocusMap> {
                   File(widget.record.imagePath),
                   fit: BoxFit.fill,
                   cacheWidth: 900,
+                  semanticLabel: L.of(context).photoOfScan,
                 ),
                 Column(
                   children: List<Widget>.generate(_grid, (int y) {
@@ -1437,6 +1437,7 @@ class _ScanPhoto extends StatelessWidget {
                   file,
                   fit: BoxFit.cover,
                   cacheWidth: 1000,
+                  semanticLabel: L.of(context).photoOfScan,
                   errorBuilder: (_, _, _) => const ColoredBox(
                     color: AppColor.fill,
                     child: Icon(
@@ -1498,7 +1499,13 @@ class _FullScreenPhoto extends StatelessWidget {
     ),
     body: InteractiveViewer(
       maxScale: 5,
-      child: Center(child: Image.file(file, fit: BoxFit.contain)),
+      child: Center(
+        child: Image.file(
+          file,
+          fit: BoxFit.contain,
+          semanticLabel: L.of(context).photoOfScan,
+        ),
+      ),
     ),
   );
 }

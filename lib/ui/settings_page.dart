@@ -11,6 +11,7 @@ import '../ml/classifier.dart';
 import '../ml/decision.dart';
 import 'widgets/common.dart';
 import 'widgets/vet_contacts.dart';
+import '../data/reminders.dart';
 
 /// Language, what the model is, and the data.
 ///
@@ -191,6 +192,7 @@ class SettingsPage extends StatelessWidget {
     );
     if (!yes) return;
     await store.clear();
+    await RescanReminders.cancelAll();
     if (!context.mounted) return;
     showToast(context, l.recordsDeleted);
   }

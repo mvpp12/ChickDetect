@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-
-import '../core/icons.dart';
 import '../core/strings.dart';
 
 /// One step of the first-run walkthrough.
@@ -47,19 +44,27 @@ const List<FlowStep> kFlowSteps = <FlowStep>[
 ];
 
 /// One capture rule, for the Guide tab.
+///
+/// Each rule carries a real photo of doing it right and doing it wrong. A
+/// farmer reading at arm's length matches a picture faster than a sentence,
+/// and the difference between fresh and dried is something you have to see.
+/// The photos are from the training dataset; only [badAsset] of the light rule
+/// is edited (darkened), because the dataset has no truly dark shots.
 class PhotoRule {
-  final IconData icon;
   final String Function(L) title;
   final String Function(L) body;
   final String Function(L) doLabel;
   final String Function(L) dontLabel;
+  final String goodAsset;
+  final String badAsset;
 
   const PhotoRule({
-    required this.icon,
     required this.title,
     required this.body,
     required this.doLabel,
     required this.dontLabel,
+    required this.goodAsset,
+    required this.badAsset,
   });
 }
 
@@ -70,25 +75,28 @@ class PhotoRule {
 /// coming out unreadable.
 const List<PhotoRule> kPhotoRules = <PhotoRule>[
   PhotoRule(
-    icon: AppIcons.fresh,
     title: _r1t,
     body: _r1b,
     doLabel: _r1d,
     dontLabel: _r1n,
+    goodAsset: 'assets/guide/fresh_good.jpg',
+    badAsset: 'assets/guide/fresh_bad.jpg',
   ),
   PhotoRule(
-    icon: AppIcons.centred,
     title: _r2t,
     body: _r2b,
     doLabel: _r2d,
     dontLabel: _r2n,
+    goodAsset: 'assets/guide/single_good.jpg',
+    badAsset: 'assets/guide/single_bad.jpg',
   ),
   PhotoRule(
-    icon: AppIcons.bright,
     title: _r3t,
     body: _r3b,
     doLabel: _r3d,
     dontLabel: _r3n,
+    goodAsset: 'assets/guide/light_good.jpg',
+    badAsset: 'assets/guide/light_bad.jpg',
   ),
 ];
 

@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../core/icons.dart';
@@ -13,6 +14,7 @@ import '../core/tokens.dart';
 import '../data/care.dart';
 import '../data/conditions.dart';
 import '../data/photo_store.dart';
+import '../data/reminders.dart';
 import '../data/scan_record.dart';
 import '../data/scan_store.dart';
 import '../ml/classifier.dart';
@@ -160,12 +162,34 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
     try {
       final XFile file = await c.takePicture();
       if (!mounted) return;
+      // Felt and heard: the farmer is usually looking at the bird, not the
+      // screen, when the shutter goes.
+      HapticFeedback.mediumImpact();
+      SystemSound.play(SystemSoundType.click);
       setState(() {
         _shot = File(file.path);
         _stage = _Stage.confirming;
       });
     } catch (_) {
       if (mounted) showToast(context, L.of(context).captureFailed);
+    }
+  }
+
+  /// A different feel per outcome, so the result registers before it is
+  /// read: one light tap for healthy, two strong ones for a condition, and a
+  /// single medium one for "take another photo".
+  Future<void> _buzzFor(VerdictKind kind) async {
+    switch (kind) {
+      case VerdictKind.healthy:
+        await HapticFeedback.lightImpact();
+      case VerdictKind.condition:
+        await HapticFeedback.heavyImpact();
+        await Future<void>.delayed(const Duration(milliseconds: 180));
+        await HapticFeedback.heavyImpact();
+      case VerdictKind.inconclusive:
+      case VerdictKind.photoRejected:
+      case VerdictKind.notDropping:
+        await HapticFeedback.mediumImpact();
     }
   }
 
@@ -226,6 +250,8 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   }
 
   Future<void> _showResult(Verdict verdict, String imagePath) async {
+    await _buzzFor(verdict.kind);
+    if (!mounted) return;
     if (verdict.kind == VerdictKind.photoRejected) {
       await showModalBottomSheet<void>(
         context: context,
@@ -379,7 +405,7 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   Widget _preview(L l) {
     final File? shot = _shot;
     if (shot != null) {
-      return Image.file(shot, fit: BoxFit.cover);
+      return Image.file(shot, fit: BoxFit.cover, semanticLabel: l.photoToCheck);
     }
     if (widget.modelFailed) {
       return _Blocked(
@@ -935,6 +961,13 @@ class _ResultSheet extends StatelessWidget {
           const SizedBox(height: Insets.section),
           _CarePreview(condition: condition),
         ],
+        if (verdict.kind == VerdictKind.condition) ...<Widget>[
+          const SizedBox(height: Insets.lg),
+          _RescanReminder(
+            record: record,
+            conditionName: condition.name(l.lang),
+          ),
+        ],
         const SizedBox(height: Insets.section),
         Text(l.nameThisScan, style: AppFont.h3),
         const SizedBox(height: 12),
@@ -951,6 +984,88 @@ class _ResultSheet extends StatelessWidget {
           icon: const Icon(AppIcons.scan, size: 20),
           label: Text(l.scanAgain),
         ),
+      ],
+    );
+  }
+}
+
+/// "Remind me to scan again in 3 days", offered after a named condition.
+///
+/// A second scan is what lets Records say better or worse than before, and
+/// after a worrying result it is the step most easily forgotten.
+class _RescanReminder extends StatefulWidget {
+  final ScanRecord record;
+  final String conditionName;
+
+  const _RescanReminder({required this.record, required this.conditionName});
+
+  @override
+  State<_RescanReminder> createState() => _RescanReminderState();
+}
+
+class _RescanReminderState extends State<_RescanReminder> {
+  DateTime? _due;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    RescanReminders.dueFor(widget.record.id).then((DateTime? due) {
+      if (mounted) setState(() => _due = due);
+    });
+  }
+
+  Future<void> _set() async {
+    final L l = L.of(context);
+    setState(() => _busy = true);
+    final String what = widget.record.coop.isEmpty
+        ? widget.conditionName
+        : '${widget.record.coop} · ${widget.conditionName}';
+    DateTime? due;
+    try {
+      due = await RescanReminders.schedule(
+        scanId: widget.record.id,
+        title: l.remindTitle,
+        body: l.remindBody(what),
+      );
+    } catch (_) {
+      due = null;
+    }
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _due = due;
+    });
+    if (due == null) showToast(context, l.remindBlocked);
+  }
+
+  Future<void> _cancel() async {
+    await RescanReminders.cancel(widget.record.id);
+    if (mounted) setState(() => _due = null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final L l = L.of(context);
+    final DateTime? due = _due;
+    if (due == null) {
+      return OutlinedButton.icon(
+        onPressed: _busy ? null : _set,
+        icon: const Icon(Icons.notifications_active_outlined, size: 20),
+        label: Text(l.remindRescan),
+      );
+    }
+    return Row(
+      children: <Widget>[
+        const Icon(Icons.event_available, size: 20, color: AppColor.green700),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            l.remindSet(DateFormat('MMM d, h:mm a').format(due)),
+            style: AppFont.label,
+          ),
+        ),
+        TextButton(onPressed: _cancel, child: Text(l.remindCancel)),
       ],
     );
   }
@@ -978,8 +1093,11 @@ class _NotDroppingSheet extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const Icon(AppIcons.noSubject,
-                      color: AppColor.caution, size: 24),
+                  const Icon(
+                    AppIcons.noSubject,
+                    color: AppColor.caution,
+                    size: 24,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -1031,10 +1149,7 @@ class _RetakeSheet extends StatelessWidget {
     final L l = L.of(context);
     return SheetFrame(
       children: <Widget>[
-        Text(
-          l.scanResult,
-          style: AppFont.micro.copyWith(color: AppColor.ink3),
-        ),
+        Text(l.scanResult, style: AppFont.micro.copyWith(color: AppColor.ink3)),
         const SizedBox(height: 10),
         ConditionReport(
           condition: conditionFor('inconclusive'),

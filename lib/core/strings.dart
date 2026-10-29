@@ -129,6 +129,10 @@ class L {
   );
   String get rule3Do => _p('10–15 cm, maliwanag', '10–15 cm, bright');
   String get rule3Dont => _p('Malayo o madilim', 'Far or dark');
+  String get rulePhotoCredit => _p(
+    'Mga halimbawang litrato: Machuve et al., Machine Learning Dataset for Poultry Diseases Diagnostics (Zenodo, CC BY 4.0). Pinadilim ang huling litrato.',
+    'Example photos: Machuve et al., Machine Learning Dataset for Poultry Diseases Diagnostics (Zenodo, CC BY 4.0). The last photo was darkened.',
+  );
 
   // ── camera ─────────────────────────────────────────────────────────────
   String get aimHere =>
@@ -320,6 +324,36 @@ class L {
     'Its photo and result will be deleted for good.',
   );
   String get scanDeleted => _p('Nabura ang scan', 'Scan deleted');
+  String get undo => _p('Ibalik', 'Undo');
+
+  // ── spoken descriptions (TalkBack) ─────────────────────────────────────
+  String get scoreHighest => _p('pinakamataas na iskor', 'highest score');
+  String get scoreClose =>
+      _p('malapit sa pinakamataas', 'close to the highest');
+  String get scoreLower => _p('mas mababa', 'much lower');
+  String get photoOfScan =>
+      _p('Litrato ng na-scan na dumi', 'Photo of the scanned dropping');
+  String get photoToCheck =>
+      _p('Ang litratong susuriin', 'The photo to be checked');
+
+  // ── rescan reminder ────────────────────────────────────────────────────
+  String get remindRescan => _p(
+    'Paalalahanan akong mag-scan ulit sa loob ng 3 araw',
+    'Remind me to scan again in 3 days',
+  );
+  String remindSet(String when) =>
+      _p('May paalala sa $when', 'Reminder set for $when');
+  String get remindCancel => _p('Alisin ang paalala', 'Cancel reminder');
+  String get remindBlocked => _p(
+    'Hindi pinayagan ang notifications. Buksan ito sa Settings ng telepono.',
+    'Notifications are turned off. Turn them on in the phone settings.',
+  );
+  String get remindTitle =>
+      _p('Oras na para mag-scan ulit', 'Time to scan again');
+  String remindBody(String what) => _p(
+    'Kumusta na ang manok? Mag-scan ulit para makita kung gumaganda ($what).',
+    'How is the chicken? Scan again to see if it is getting better ($what).',
+  );
   String get recordsDeleted => _p('Nabura lahat ng scan', 'All scans deleted');
   String get today => _p('Ngayon', 'Today');
   String get yesterday => _p('Kahapon', 'Yesterday');

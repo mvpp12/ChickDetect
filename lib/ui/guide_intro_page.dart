@@ -274,6 +274,8 @@ class _Photo extends StatelessWidget {
     // Every photograph keeps its phone near the middle, so a centred crop
     // keeps the hand, the phone and the sample in frame.
     alignment: Alignment.center,
+    // The step's own text says what the photo shows.
+    excludeFromSemantics: true,
     // The source files are 1376 px wide; decoding them at screen width is
     // plenty and spares a cheap phone a few megabytes per step.
     cacheWidth: 1100,
