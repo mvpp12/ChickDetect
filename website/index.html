@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tl" data-lang="tl">
+<html lang="tl" data-lang="tl" data-device="android">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -11,6 +11,18 @@
 <meta property="og:title" content="ChickDetect">
 <meta property="og:description" content="I-scan ang dumi. Makita agad ang sakit.">
 <meta property="og:image" content="https://chickdetect-website.vercel.app/img/hero.jpg">
+<script>
+  // Which download to lead with: the APK on Android, the browser version on
+  // iPhone/iPad, the QR code on a computer. Without JavaScript the page stays
+  // on "android", which is how it looked before.
+  (function () {
+    var ua = navigator.userAgent, d = 'desktop';
+    if (/android/i.test(ua)) d = 'android';
+    else if (/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) d = 'ios';
+    else if (/Mobi/i.test(ua)) d = 'android';
+    document.documentElement.setAttribute('data-device', d);
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
@@ -39,6 +51,12 @@
 
   /* One language at a time, switched by the toggle. */
   [data-lang="tl"] [lang="en"], [data-lang="en"] [lang="tl"] { display: none !important; }
+
+  /* One download path per device (set in <head>). */
+  html:not([data-device="android"]) .for-android,
+  html:not([data-device="ios"]) .for-ios,
+  html:not([data-device="desktop"]) .for-desktop,
+  [data-device="ios"] .not-ios { display: none !important; }
 
   /* ── top bar ───────────────────────────────────────────────────────── */
   html { scroll-behavior: smooth; }
@@ -104,28 +122,37 @@
   .download svg { width: 24px; height: 24px; }
   .meta { margin: 16px 0 0; font-size: 14px; color: var(--white-50); }
   .links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 26px; }
-  .links a, .links button {
-    background: none; border: 0; padding: 6px 0; cursor: pointer; color: #fff;
+  .links a {
+    padding: 6px 0; color: #fff;
     font-size: 15px; font-weight: 500; text-decoration: underline;
     text-decoration-color: rgba(255, 255, 255, .35); text-underline-offset: 5px;
   }
-  .links a:hover, .links button:hover { text-decoration-color: var(--mint-2); }
+  .links a:hover { text-decoration-color: var(--mint-2); }
 
-  /* Computer visitors: scan to open this page on the phone. */
   .quote {
     margin: 0 0 32px; padding: 2px 0 2px 18px; border-left: 3px solid var(--mint-2);
     font-size: clamp(15px, 1.2vw, 17px); font-style: italic; color: var(--mint); max-width: 30em;
   }
-  .act { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px 26px; }
+
+  /* Computer visitors: the QR code is the main way in. */
   .qr {
-    display: flex; align-items: center; gap: 14px;
-    padding: 8px 14px 8px 8px; border-radius: 16px; max-width: 250px;
-    background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .12);
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px 22px 14px 14px; border-radius: 20px; max-width: 440px;
+    background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .14);
   }
-  .qr .code { background: #fff; padding: 6px; border-radius: 10px; flex: none; }
-  .qr .code img { width: 52px; height: 52px; }
-  .qr p { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--white-70); }
-  .qr strong { display: block; color: #fff; font-size: 13.5px; }
+  .qr .code { background: #fff; padding: 8px; border-radius: 12px; flex: none; }
+  .qr .code img { width: 112px; height: 112px; }
+  .qr p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--white-70); }
+  .qr strong { display: block; color: #fff; font-size: 17px; margin-bottom: 4px; }
+  .apk-here { display: inline-block; margin-top: 10px; color: var(--mint); font-size: 14px; font-weight: 500; text-underline-offset: 4px; }
+
+  /* iPhone visitors: the app is Android only, the browser version is not. */
+  .ios-note {
+    margin: 0 0 16px; padding: 14px 16px; border-radius: 14px; max-width: 30em;
+    background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .14);
+    font-size: 15px; color: var(--white-70);
+  }
+  .ios-note strong { color: #fff; }
 
   .photo { position: relative; }
   .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
@@ -174,6 +201,27 @@
   .step .n { font-size: 13px; font-weight: 600; letter-spacing: 2px; color: var(--mint-2); margin-bottom: 6px; }
   .step p { margin: 0; font-size: 15px; color: var(--white-70); }
 
+  /* ── the result screen, large ──────────────────────────────────────── */
+  .show {
+    display: grid; grid-template-columns: auto 1fr; gap: clamp(32px, 6vw, 80px);
+    align-items: center; margin-top: clamp(56px, 8vw, 96px);
+  }
+  .phone {
+    width: min(300px, 78vw); margin: 0 auto; padding: 10px; border-radius: 40px;
+    background: #0B0F0D; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(255, 255, 255, .12);
+  }
+  .phone img { width: 100%; height: auto; border-radius: 30px; }
+  .show h3 { margin: 0 0 22px; font-size: clamp(24px, 2.6vw, 32px); font-weight: 800; letter-spacing: -.5px; line-height: 1.15; }
+  .callouts { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .callouts li { display: flex; gap: 14px; }
+  .callouts .ic {
+    flex: none; width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(143, 221, 179, .14); color: var(--mint-2); display: grid; place-items: center;
+  }
+  .callouts .ic svg { width: 20px; height: 20px; }
+  .callouts strong { display: block; font-size: 17px; }
+  .callouts span.d { color: var(--white-70); font-size: 15px; }
+
   .feats { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
   .feat {
     display: flex; gap: 16px; padding: 22px; border-radius: 20px;
@@ -185,8 +233,33 @@
   }
   .feat .ic svg { width: 24px; height: 24px; }
 
-  .end { text-align: center; }
-  .end h2 { margin: 0 auto 26px; }
+  /* ── install guide ─────────────────────────────────────────────────── */
+  .steps { list-style: none; counter-reset: s; margin: 0; padding: 0;
+    display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); }
+  .steps li {
+    counter-increment: s; padding: 22px; border-radius: 20px;
+    background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1);
+  }
+  .steps li::before {
+    content: counter(s); display: grid; place-items: center; margin-bottom: 14px;
+    width: 40px; height: 40px; border-radius: 50%; background: var(--mint); color: var(--deep);
+    font-weight: 800; font-size: 17px;
+  }
+  .steps strong { display: block; font-size: 18px; margin-bottom: 4px; }
+  .steps .d { color: var(--white-70); font-size: 15px; }
+  /* The words on the phone's own button, so people know what to look for. */
+  .tap {
+    display: inline-block; margin: 8px 6px 0 0; padding: 5px 12px; border-radius: 999px;
+    background: #fff; color: var(--deep); font-size: 13.5px; font-weight: 600; white-space: nowrap;
+  }
+  .warn {
+    margin-top: 20px; padding: 18px 20px; border-radius: 16px; font-size: 15px;
+    background: #FEF3E2; color: var(--ink); border: 1px solid rgba(168, 82, 0, .28);
+  }
+  .warn b { color: #A85200; }
+  .warn .tap { background: #fff; border: 1px solid rgba(168, 82, 0, .28); }
+  .get { margin-top: 44px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .get .qr { text-align: left; }
 
   /* ── footer ────────────────────────────────────────────────────────── */
   footer {
@@ -197,51 +270,67 @@
   footer p { margin: 0 0 8px; }
   footer a { color: var(--white-70); }
 
-  /* ── install steps dialog ──────────────────────────────────────────── */
-  dialog {
-    width: min(520px, calc(100% - 32px)); max-height: calc(100% - 32px);
-    border: 0; border-radius: 22px; padding: 0; color: var(--ink); background: #fff;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+  /* ── after tapping download: what happens next ─────────────────────── */
+  .sheet {
+    position: fixed; inset: auto 16px 16px 16px; z-index: 20; margin: 0 auto;
+    width: auto; max-width: 480px; padding: 20px 20px 18px; border: 0; border-radius: 22px;
+    background: #fff; color: var(--ink); box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
   }
-  dialog::backdrop { background: rgba(2, 20, 12, .7); backdrop-filter: blur(3px); }
-  .dlg { padding: 26px 24px 24px; }
-  .dlg-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .dlg h2 { margin: 0; font-size: 22px; letter-spacing: -.3px; }
+  .sheet[open] { animation: rise .25s ease-out; }
+  @keyframes rise { from { transform: translateY(24px); opacity: 0; } }
+  .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .sheet h2 { margin: 2px 0 6px; font-size: 19px; letter-spacing: -.2px; }
+  .sheet p { margin: 0; font-size: 15px; color: var(--ink-2); }
+  .sheet .go {
+    display: flex; align-items: center; justify-content: center; margin-top: 16px; min-height: 48px;
+    border-radius: 14px; background: var(--green-900); color: #fff; text-decoration: none; font-weight: 600;
+  }
   .close {
-    width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
+    flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
     background: #EFF1F4; color: var(--ink); font-size: 22px; line-height: 1;
   }
-  .steps { list-style: none; counter-reset: s; margin: 0; padding: 0; }
-  .steps li { counter-increment: s; position: relative; padding: 0 0 16px 48px; }
-  .steps li::before {
-    content: counter(s); position: absolute; left: 0; top: 0;
-    width: 32px; height: 32px; border-radius: 50%; background: var(--green-900); color: #fff;
-    display: grid; place-items: center; font-weight: 600; font-size: 14px;
-  }
-  .steps strong { display: block; }
-  .steps span.d { color: var(--ink-2); font-size: 14px; }
-  .warn {
-    margin-top: 4px; padding: 14px 16px; border-radius: 14px; font-size: 14px;
-    background: #FEF3E2; border: 1px solid rgba(168, 82, 0, .28);
-  }
-  .warn b { color: #A85200; }
 
-  /* ── phone: the photo fills the screen, text sits over it ──────────── */
+  /* ── phone: download stays one tap away while scrolling ────────────── */
+  .stick { display: none; }
+
   @media (max-width: 900px) {
     .nav { display: none; }
     .grid3, .feats { grid-template-columns: 1fr; }
-    .hero { grid-template-columns: 1fr; }
-    .photo { position: absolute; inset: 0; }
-    .photo img { object-position: center 40%; }
+    .steps { grid-template-columns: 1fr; }
+    .show { grid-template-columns: 1fr; }
+
+    /* Photo on top, cropped to the phone in the hand; text below it. */
+    .hero { display: flex; flex-direction: column; min-height: 0; }
+    .photo { order: -1; height: clamp(300px, 46svh, 520px); }
+    .photo img { object-position: center 88%; }
     .photo::before {
       inset: 0; width: auto;
       background: linear-gradient(180deg,
-        rgba(6, 46, 32, .55) 0%, rgba(6, 46, 32, 0) 22%,
-        rgba(6, 46, 32, .15) 40%, rgba(6, 46, 32, .88) 64%, var(--deep) 82%);
+        rgba(6, 46, 32, .6) 0%, rgba(6, 46, 32, 0) 24%,
+        rgba(6, 46, 32, 0) 78%, var(--deep) 100%);
     }
-    .copy { background: transparent; justify-content: flex-end; padding-top: 50vh; padding-bottom: 36px; }
+    .copy { padding-top: 8px; padding-bottom: 40px; background: var(--deep); }
+    .quote { display: none; }
     .download { width: 100%; }
-    .qr { display: none; }
+
+    .stick {
+      position: fixed; inset: auto 0 0 0; z-index: 10;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(6, 46, 32, .94); backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      transform: translateY(110%); transition: transform .2s ease;
+    }
+    .stick.on { transform: none; }
+    .stick .tile { flex: none; width: 40px; height: 40px; border-radius: 10px; background: #fff; display: grid; place-items: center; }
+    .stick .tile img { width: 30px; height: 30px; }
+    .stick .txt { flex: 1; min-width: 0; font-size: 12.5px; color: var(--white-50); line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stick .txt b { display: block; color: #fff; font-size: 15px; }
+    .stick .download { width: auto; min-height: 48px; padding: 0 18px; font-size: 15px; letter-spacing: 1px; gap: 8px; box-shadow: none; }
+    .stick .download svg { width: 20px; height: 20px; }
+    [data-device="desktop"] .stick { display: none; }
+    html:not([data-device="desktop"]) footer { padding-bottom: 110px; }
   }
 </style>
 </head>
@@ -256,6 +345,7 @@
     <a href="#problema"><span lang="tl">Problema</span><span lang="en">Problem</span></a>
     <a href="#solusyon"><span lang="tl">Solusyon</span><span lang="en">Solution</span></a>
     <a href="#features">Features</a>
+    <a href="#install" class="not-ios"><span lang="tl">I-install</span><span lang="en">Install</span></a>
   </nav>
   <div class="lang" role="group" aria-label="Language">
     <button type="button" data-set="tl" aria-pressed="true">TL</button>
@@ -279,30 +369,45 @@
         <span lang="en">“Disease is easier to stop when it is caught early.”</span>
       </blockquote>
 
-      <div class="act">
-      <div>
-      <a class="download" href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-        <span lang="tl">I-download</span><span lang="en">Download</span>
-      </a>
-      <p class="meta">
-        <span lang="tl">Bersyon 2.0.0 · 52.5 MB · Android 7.0 pataas</span>
-        <span lang="en">Version 2.0.0 · 52.5 MB · Android 7.0 or newer</span>
-      </p>
-      </div>
-      <div class="qr">
-        <div class="code"><img src="img/qr.svg" alt="QR code" width="52" height="52"></div>
-        <p>
-          <strong><span lang="tl">Nasa computer ka?</span><span lang="en">On a computer?</span></strong>
-          <span lang="tl">I-scan gamit ang phone para i-download doon.</span>
-          <span lang="en">Scan with your phone to download there.</span>
-        </p>
-      </div>
+      <div class="act" id="hero-act">
+        <div class="for-android">
+          <a class="download" data-apk href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span lang="tl">I-download</span><span lang="en">Download</span>
+          </a>
+          <p class="meta">
+            <span lang="tl">Bersyon 2.0.0 · 52.5 MB · Android 7.0 pataas</span>
+            <span lang="en">Version 2.0.0 · 52.5 MB · Android 7.0 or newer</span>
+          </p>
+        </div>
+
+        <div class="for-ios">
+          <p class="ios-note">
+            <strong><span lang="tl">Android lang muna ang app.</span><span lang="en">The app is Android only for now.</span></strong>
+            <span lang="tl">Sa iPhone, puwede mong silipin ang app sa browser, pero sa Android phone lang gumagana ang pag-scan.</span>
+            <span lang="en">On iPhone you can look around the app in the browser, but scanning only works on an Android phone.</span>
+          </p>
+          <a class="download" href="https://mvpp12.github.io/ChickDetect/">
+            <span lang="tl">Silipin sa browser</span><span lang="en">Preview in the browser</span>
+          </a>
+        </div>
+
+        <div class="for-desktop">
+          <div class="qr">
+            <div class="code"><img src="img/qr.svg" alt="QR code para sa download" width="112" height="112"></div>
+            <p>
+              <strong><span lang="tl">I-scan gamit ang Android phone</span><span lang="en">Scan with your Android phone</span></strong>
+              <span lang="tl">Para direktang ma-download at ma-install sa phone mo.</span>
+              <span lang="en">To download and install it straight on your phone.</span>
+              <br><a class="apk-here" data-apk href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk"><span lang="tl">o i-download ang APK dito (52.5 MB)</span><span lang="en">or download the APK here (52.5 MB)</span></a>
+            </p>
+          </div>
+        </div>
       </div>
 
       <div class="links">
-        <button type="button" id="open-install"><span lang="tl">Paano i-install?</span><span lang="en">How to install?</span></button>
-        <a href="https://mvpp12.github.io/ChickDetect/"><span lang="tl">Subukan sa browser</span><span lang="en">Try it in the browser</span></a>
+        <a href="#install" class="not-ios"><span lang="tl">Paano i-install?</span><span lang="en">How to install?</span></a>
+        <a href="https://mvpp12.github.io/ChickDetect/" class="not-ios"><span lang="tl">Subukan sa browser</span><span lang="en">Try it in the browser</span></a>
       </div>
 
     </div>
@@ -350,6 +455,28 @@
         <h3><span lang="tl">Alamin ang gagawin</span><span lang="en">Know what to do</span></h3>
         <p><span lang="tl">Resulta, payo, at kailan tatawag sa beterinaryo.</span><span lang="en">The result, advice, and when to call a vet.</span></p></div></div>
     </div>
+
+    <div class="show">
+      <div class="phone">
+        <img lang="tl" src="img/app-advice-tl.jpg" alt="Screen ng ChickDetect: Coccidiosis, at ang mga gagawin ngayong araw" width="488" height="1055" loading="lazy">
+        <img lang="en" src="img/app-advice-en.jpg" alt="ChickDetect screen: Coccidiosis, and what to do today" width="488" height="1055" loading="lazy">
+      </div>
+      <div>
+        <p class="kicker"><span lang="tl">Sa loob ng app</span><span lang="en">Inside the app</span></p>
+        <h3><span lang="tl">Ganito ang makikita mo pagkatapos mag-scan.</span><span lang="en">This is what you see after a scan.</span></h3>
+        <ul class="callouts">
+          <li><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="M22 4 12 14l-3-3"/></svg></div><div>
+            <strong><span lang="tl">Ang resulta</span><span lang="en">The result</span></strong>
+            <span class="d"><span lang="tl">Malusog, o ang pangalan ng posibleng sakit.</span><span lang="en">Healthy, or the name of the likely disease.</span></span></div></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div>
+            <strong><span lang="tl">Mga gagawin ngayon</span><span lang="en">What to do now</span></strong>
+            <span class="d"><span lang="tl">Malinaw na hakbang para sa unang 24 oras at sa linggong ito.</span><span lang="en">Clear steps for the first 24 hours and this week.</span></span></div></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div><div>
+            <strong><span lang="tl">Kailan tatawag sa beterinaryo</span><span lang="en">When to call a vet</span></strong>
+            <span class="d"><span lang="tl">Isang pindot lang para tawagan ang naka-save na numero.</span><span lang="en">One tap to call a saved number.</span></span></div></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -381,14 +508,62 @@
   </div>
 </section>
 
-<section class="sec end">
+<section class="sec" id="install">
   <div class="wrap">
-    <h2><span lang="tl">Subukan ang ChickDetect ngayon.</span><span lang="en">Try ChickDetect today.</span></h2>
-    <a class="download" href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-      <span lang="tl">I-download</span><span lang="en">Download</span>
-    </a>
-    <p class="meta"><span lang="tl">Android 7.0 pataas</span><span lang="en">Android 7.0 or newer</span></p>
+    <p class="kicker"><span lang="tl">I-download at i-install</span><span lang="en">Download and install</span></p>
+    <h2><span lang="tl">Apat na hakbang, mga isang minuto.</span><span lang="en">Four steps, about a minute.</span></h2>
+    <p class="intro"><span lang="tl">Wala pa sa Play Store ang ChickDetect, kaya direkta itong ini-install mula sa file. Ito ang mga makikita mo sa phone:</span><span lang="en">ChickDetect is not on the Play Store yet, so it installs straight from the file. This is what your phone will show:</span></p>
+    <ol class="steps">
+      <li><strong><span lang="tl">I-download</span><span lang="en">Download</span></strong>
+        <span class="d"><span lang="tl">Pindutin ang I-download sa Android phone mo. Kung may babala ang browser, piliin ang:</span><span lang="en">Tap Download on your Android phone. If the browser warns you, choose:</span></span>
+        <br><span class="tap"><span lang="tl">I-download pa rin</span><span lang="en">Download anyway</span></span></li>
+      <li><strong><span lang="tl">Buksan ang file</span><span lang="en">Open the file</span></strong>
+        <span class="d"><span lang="tl">Pindutin ang file sa notification o sa Downloads:</span><span lang="en">Tap the file in the notification or in Downloads:</span></span>
+        <br><span class="tap">ChickDetect.apk</span></li>
+      <li><strong><span lang="tl">Payagan ang pag-install</span><span lang="en">Allow the install</span></strong>
+        <span class="d"><span lang="tl">Kapag tinanong, i-on ito, saka bumalik:</span><span lang="en">If asked, turn this on, then go back:</span></span>
+        <br><span class="tap"><span lang="tl">Payagan mula sa source na ito</span><span lang="en">Allow from this source</span></span></li>
+      <li><strong><span lang="tl">I-install at buksan</span><span lang="en">Install and open</span></strong>
+        <span class="d"><span lang="tl">Pindutin ang dalawang ito, saka payagan ang camera:</span><span lang="en">Tap these two, then allow the camera:</span></span>
+        <br><span class="tap">Install</span><span class="tap">Open</span></li>
+    </ol>
+    <div class="warn">
+      <b><span lang="tl">Babala ng Play Protect?</span><span lang="en">Play Protect warning?</span></b>
+      <span lang="tl">Normal ito sa mga app na wala pa sa Play Store. Pindutin ang</span>
+      <span lang="en">This is normal for apps not on the Play Store yet. Tap</span>
+      <span class="tap"><span lang="tl">Higit pang detalye</span><span lang="en">More details</span></span> →
+      <span class="tap"><span lang="tl">I-install pa rin</span><span lang="en">Install anyway</span></span>
+    </div>
+
+    <div class="get" id="end-act">
+      <div class="for-android">
+        <a class="download" data-apk href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span lang="tl">I-download</span><span lang="en">Download</span>
+        </a>
+        <p class="meta">
+          <span lang="tl">Bersyon 2.0.0 · 52.5 MB · Android 7.0 pataas</span>
+          <span lang="en">Version 2.0.0 · 52.5 MB · Android 7.0 or newer</span>
+        </p>
+      </div>
+      <div class="for-ios">
+        <a class="download" href="https://mvpp12.github.io/ChickDetect/">
+          <span lang="tl">Silipin sa browser</span><span lang="en">Preview in the browser</span>
+        </a>
+        <p class="meta"><span lang="tl">Sa Android phone lang gumagana ang pag-scan.</span><span lang="en">Scanning only works on an Android phone.</span></p>
+      </div>
+      <div class="for-desktop">
+        <div class="qr">
+          <div class="code"><img src="img/qr.svg" alt="QR code para sa download" width="112" height="112"></div>
+          <p>
+            <strong><span lang="tl">I-scan gamit ang Android phone</span><span lang="en">Scan with your Android phone</span></strong>
+            <span lang="tl">Para direktang ma-download at ma-install sa phone mo.</span>
+            <span lang="en">To download and install it straight on your phone.</span>
+            <br><a class="apk-here" data-apk href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk"><span lang="tl">o i-download ang APK dito (52.5 MB)</span><span lang="en">or download the APK here (52.5 MB)</span></a>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -405,28 +580,31 @@
   <p>© 2026 ChickDetect</p>
 </footer>
 
-<dialog id="install" aria-labelledby="install-title">
-  <div class="dlg">
-    <div class="dlg-head">
-      <h2 id="install-title"><span lang="tl">Paano i-install</span><span lang="en">How to install</span></h2>
-      <button class="close" type="button" aria-label="Close">×</button>
+<div class="stick" id="stick" aria-hidden="true">
+  <span class="tile"><img src="img/logo-mark.png" alt="" width="30" height="30"></span>
+  <span class="txt"><b>ChickDetect</b>
+    <span class="for-android">52.5 MB · Android 7+</span>
+    <span class="for-ios"><span lang="tl">Silipin ang app sa browser</span><span lang="en">Preview the app in the browser</span></span>
+  </span>
+  <a class="download for-android" data-apk tabindex="-1" href="https://github.com/mvpp12/ChickDetect/releases/latest/download/ChickDetect.apk">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+    <span lang="tl">I-download</span><span lang="en">Download</span>
+  </a>
+  <a class="download for-ios" tabindex="-1" href="https://mvpp12.github.io/ChickDetect/">
+    <span lang="tl">Buksan</span><span lang="en">Open</span>
+  </a>
+</div>
+
+<dialog class="sheet" id="after-dl" aria-labelledby="after-dl-title">
+  <div class="sheet-head">
+    <div>
+      <h2 id="after-dl-title"><span lang="tl">Nagda-download na…</span><span lang="en">Downloading…</span></h2>
+      <p class="for-android"><span lang="tl">Kapag tapos na, buksan ang ChickDetect.apk sa notification o sa Downloads, saka pindutin ang Install.</span><span lang="en">When it finishes, open ChickDetect.apk from the notification or Downloads, then tap Install.</span></p>
+      <p class="for-desktop"><span lang="tl">Nasa computer ang file. Ilipat ito sa Android phone mo — o mas madali, i-scan ang QR code gamit ang phone.</span><span lang="en">The file is on your computer. Move it to your Android phone — or, easier, scan the QR code with the phone.</span></p>
     </div>
-    <ol class="steps">
-      <li><strong><span lang="tl">I-download</span><span lang="en">Download</span></strong>
-        <span class="d"><span lang="tl">Pindutin ang I-download gamit ang Android phone mo. Kung may babala ang browser, piliin ang "I-download pa rin".</span><span lang="en">Tap Download on your Android phone. If the browser warns you, choose "Download anyway".</span></span></li>
-      <li><strong><span lang="tl">Buksan ang file</span><span lang="en">Open the file</span></strong>
-        <span class="d"><span lang="tl">Pindutin ang ChickDetect.apk sa notification o sa Downloads.</span><span lang="en">Tap ChickDetect.apk in the notification or in Downloads.</span></span></li>
-      <li><strong><span lang="tl">Payagan ang pag-install</span><span lang="en">Allow the install</span></strong>
-        <span class="d"><span lang="tl">Kapag tinanong, buksan ang "Payagan mula sa source na ito", saka bumalik.</span><span lang="en">If asked, turn on "Allow from this source", then go back.</span></span></li>
-      <li><strong><span lang="tl">I-install at buksan</span><span lang="en">Install and open</span></strong>
-        <span class="d"><span lang="tl">Pindutin ang Install, tapos Open. Payagan ang camera.</span><span lang="en">Tap Install, then Open. Allow the camera.</span></span></li>
-    </ol>
-    <div class="warn">
-      <b><span lang="tl">Babala ng Play Protect?</span><span lang="en">Play Protect warning?</span></b>
-      <span lang="tl">Normal ito sa mga app na wala pa sa Play Store. Pindutin ang "Higit pang detalye" → "I-install pa rin".</span>
-      <span lang="en">This is normal for apps not on the Play Store yet. Tap "More details" → "Install anyway".</span>
-    </div>
+    <button class="close" type="button" aria-label="Close">×</button>
   </div>
+  <a class="go" href="#install"><span lang="tl">Tingnan ang mga hakbang</span><span lang="en">See the steps</span></a>
 </dialog>
 
 <script>
@@ -449,11 +627,34 @@
       b.addEventListener('click', function () { set(b.getAttribute('data-set')); });
     });
 
-    // Install steps.
-    var dlg = document.getElementById('install');
-    document.getElementById('open-install').addEventListener('click', function () { dlg.showModal(); });
-    dlg.querySelector('.close').addEventListener('click', function () { dlg.close(); });
-    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    // After a download starts, say what comes next. The link itself is left
+    // alone so the download always goes through.
+    var sheet = document.getElementById('after-dl');
+    var stick = document.getElementById('stick');
+    function closeSheet() { sheet.close(); }
+    document.querySelectorAll('[data-apk]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        setTimeout(function () {
+          if (!sheet.open) sheet.show();
+          stick.classList.remove('on');
+        }, 500);
+      });
+    });
+    sheet.querySelector('.close').addEventListener('click', closeSheet);
+    sheet.querySelector('.go').addEventListener('click', closeSheet);
+
+    // Phone: a download bar once both download areas are out of view.
+    if (!('IntersectionObserver' in window)) return;
+    var inView = {};
+    var watch = [document.getElementById('hero-act'), document.getElementById('end-act')];
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { inView[e.target.id] = e.isIntersecting; });
+      var show = !inView['hero-act'] && !inView['end-act'] && !sheet.open && window.scrollY > 100;
+      stick.classList.toggle('on', show);
+      stick.setAttribute('aria-hidden', String(!show));
+      stick.querySelectorAll('a').forEach(function (a) { a.tabIndex = show ? 0 : -1; });
+    });
+    watch.forEach(function (el) { io.observe(el); });
   })();
 </script>
 </body>
